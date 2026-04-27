@@ -1,3 +1,5 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -4162,68 +4164,138 @@
 
 @media (max-height: 600px) and (orientation: landscape) {
     #content-area {
-        padding: clamp(6px, 1.8vw, 16px);
+        padding: clamp(2px, 0.8vw, 8px);
         align-items: flex-start;
     }
 
     #view-novel {
-        max-height: 78vh;
-        margin-top: 0.5vh;
-        border-radius: 20px;
+        max-height: calc(100vh - 82px);
+        margin-top: 0;
+        border-radius: 10px;
     }
 
     .dialogue-box {
-        bottom: 6px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: calc(100% - 148px);
-        max-width: 660px;
-        padding: 10px 14px;
-        background: rgba(29,29,31,0.58);
+        position: fixed !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        transform: none;
+        width: 100%;
+        max-width: none;
+        padding: 7px 14px 46px;
+        border-radius: 16px 16px 0 0;
+        background: rgba(29,29,31,0.65);
+        z-index: 100;
     }
 
     #speaker-name {
-        margin-bottom: 4px;
-        padding-bottom: 4px;
-        font-size: 13px;
+        margin-bottom: 2px;
+        padding-bottom: 2px;
+        font-size: 12px;
         border-bottom-width: 1px;
     }
 
     #dialogue-content {
-        max-height: 2.8em;
-        font-size: 14px;
-        line-height: 1.45;
-        margin-bottom: 6px;
+        max-height: 2.2em;
+        font-size: 13px;
+        line-height: 1.4;
+        margin-bottom: 3px;
     }
 
     .dialogue-bottom-controls {
-        margin-top: 4px;
+        margin-top: 2px;
     }
 
     .dialogue-nav-buttons {
-        bottom: 10px;
-        right: auto;
+        position: fixed !important;
+        bottom: 6px;
         left: 0;
         right: 0;
         justify-content: space-between;
-        padding: 0 16px;
+        padding: 0 22px;
+        z-index: 101;
+        gap: 0;
     }
 
     .nav-control-btn {
-        width: 48px;
-        height: 48px;
+        width: 42px;
+        height: 42px;
     }
 
     .nav-control-btn i {
-        font-size: 22px;
+        font-size: 18px;
     }
 
     .character-layer {
-        bottom: clamp(60px, 8vh, 110px);
+        bottom: clamp(80px, 10vh, 130px);
     }
 
     .cg-layer {
-        bottom: clamp(100px, 14vh, 180px);
+        bottom: clamp(90px, 13vh, 150px);
+    }
+
+    .music-player-panel,
+    .settings-popover {
+        max-height: calc(100dvh - 36px);
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+@media (max-width: 768px) {
+    #content-area {
+        padding: clamp(4px, 1.2vw, 12px);
+    }
+
+    #view-novel {
+        border-radius: 14px;
+    }
+
+    .dialogue-box {
+        position: fixed !important;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        transform: none;
+        width: 100%;
+        max-width: none;
+        border-radius: 20px 20px 0 0;
+        z-index: 100;
+        padding: 14px 16px 50px;
+    }
+
+    .dialogue-nav-buttons {
+        position: fixed !important;
+        bottom: 10px;
+        right: 18px;
+        left: auto;
+        z-index: 101;
+        display: flex;
+        gap: 10px;
+    }
+
+    .nav-control-btn {
+        width: 44px;
+        height: 44px;
+    }
+
+    .character-layer {
+        bottom: clamp(110px, 16vh, 220px);
+    }
+
+    .cg-layer {
+        bottom: clamp(130px, 20vh, 250px);
+    }
+
+    .music-player-panel,
+    .settings-popover {
+        max-height: calc(100dvh - 48px);
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .music-player-panel {
+        padding-bottom: 24px;
     }
 }
 </style>
