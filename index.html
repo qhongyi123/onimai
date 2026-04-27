@@ -2214,21 +2214,6 @@
     }
     );
 </script>
-<script>
-    $(function() {
-        $('#floating-prev-btn').on('click', function() {
-            $('#prev-btn').trigger('click');
-        });
-        $('#floating-next-btn').on('click', function() {
-            $('#next-btn').trigger('click');
-        });
-        const syncFloatingBtnState = function() {
-            $('#floating-prev-btn').toggleClass('disabled', $('#prev-btn').prop('disabled'));
-            $('#floating-next-btn').toggleClass('disabled', $('#next-btn').prop('disabled'));
-        };
-        setInterval(syncFloatingBtnState, 500);
-    });
-</script>
 <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Kaiti+SC:wght@400;700&family=Dancing+Script:wght@400;700&family=ZCOOL+KuaiLe&family=Press+Start+2P&family=Heiti+SC:wght@400;700&display=swap');
         :root {
@@ -2345,16 +2330,13 @@
             display: flex;
             flex-direction: column;
             width: 100%;
-            height: 100dvh;
             min-height: 100vh;
             position: relative;
             background-color: var(--app-background, #101828);
-            transition: background-color .3s ease;
-            overflow: hidden
+            transition: background-color .3s ease
         }
 
-        #app-container.modal-active>#content-area,
-        #app-container.modal-active>.dialogue-box {
+        #app-container.modal-active>#content-area {
             filter: blur(4px);
             transform: scale(0.98);
             transition: all .4s cubic-bezier(0.25,0.46,0.45,0.94)
@@ -2370,18 +2352,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(12px, 2vw, 32px) clamp(12px, 2vw, 48px);
-    min-height: 0
+    padding: clamp(28px, 5.5vw, 76px);
 }
 
 #view-novel {
     position: relative;
-    width: 100%;
-    max-width: 1730px;
-    height: auto;
-    max-height: 100%;
+    width: min(100vw, calc(92vh * 16 / 9), 1730px);
     aspect-ratio: 16 / 9;
-    border-radius: 24px;
+    max-height: 92vh;
+    border-radius: 32px;
     overflow: hidden;
     background-color: var(--stage-fallback-bg, #101828);
     background-size: cover;
@@ -2389,7 +2368,6 @@
     background-position: center center;
     box-shadow: 0 30px 80px rgba(0,0,0,0.55);
     isolation: isolate;
-    flex-shrink: 0
 }
 
 .background-overlay {
@@ -2407,10 +2385,10 @@
 
         .character-layer {
             position: absolute;
-            top: clamp(16px, 2vh, 24px);
-            left: clamp(16px, 2vw, 24px);
-            right: clamp(16px, 2vw, 24px);
-            bottom: clamp(16px, 2vh, 24px);
+            top: clamp(20px, 3vh, 32px);
+            left: clamp(20px, 3vw, 32px);
+            right: clamp(20px, 3vw, 32px);
+            bottom: clamp(120px, 8vh, 180px);
             width: auto;
             height: auto;
             z-index: 2;
@@ -2421,10 +2399,10 @@
 
         .cg-layer {
             position: absolute;
-            top: clamp(32px, 4vh, 56px);
-            left: clamp(32px, 4vw, 72px);
-            right: clamp(32px, 4vw, 72px);
-            bottom: clamp(32px, 4vh, 56px);
+            top: clamp(40px, 5vh, 72px);
+            left: clamp(48px, 5vw, 96px);
+            right: clamp(48px, 5vw, 96px);
+            bottom: clamp(160px, 12vh, 240px);
             z-index: 4;
             opacity: 0;
             visibility: hidden;
@@ -2744,21 +2722,21 @@
         }
 
         .dialogue-box {
-            position: relative;
-            width: 100%;
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
             max-width: 1000px;
-            margin: 0 auto;
-            flex-shrink: 0;
             z-index: 5;
             background: var(--ui-bg-heavy);
             backdrop-filter: blur(var(--blur-intensity));
             -webkit-backdrop-filter: blur(var(--blur-intensity));
-            border-radius: 18px 18px 0 0;
-            padding: 16px clamp(16px, 3vw, 40px);
+            border-radius: 20px;
+            padding: 24px;
             transition: background-color .5s ease,border-color .5s ease;
-            box-shadow: 0 -4px 24px var(--shadow-color-medium);
+            box-shadow: 0 8px 32px var(--shadow-color-medium);
             border: 1px solid var(--ui-border-color);
-            border-bottom: none;
             pointer-events: auto
         }
 
@@ -2820,51 +2798,6 @@
 
         .control-btn i {
             font-size: 18px
-        }
-
-        .floating-nav-btn {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1px solid rgba(255,255,255,0.2);
-            background: rgba(0,0,0,0.35);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            color: #fff;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 20;
-            pointer-events: auto;
-            transition: background .25s ease, transform .25s ease, opacity .25s ease;
-            opacity: 0
-        }
-
-        .floating-nav-btn:hover {
-            background: rgba(0,0,0,0.55);
-            transform: translateY(-50%) scale(1.1)
-        }
-
-        .floating-nav-btn:active {
-            transform: translateY(-50%) scale(0.95)
-        }
-
-        .floating-nav-btn.disabled,
-        .floating-nav-btn:disabled {
-            opacity: 0 !important;
-            pointer-events: none
-        }
-
-        #floating-prev-btn {
-            left: 10px
-        }
-
-        #floating-next-btn {
-            right: 10px
         }
 
         .dialogue-bottom-controls {
@@ -4163,106 +4096,134 @@
     font-weight: 700;
 }
 
-/* === 手机横屏适配 === */
-@media (orientation: landscape) and (max-height: 500px) {
+#dialogue-content {
+    max-height: 6.5em;
+    overflow-y: auto;
+    word-break: break-word;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.18) transparent;
+}
+
+.dialogue-text::-webkit-scrollbar {
+    width: 4px;
+}
+
+.dialogue-text::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.18);
+    border-radius: 2px;
+}
+
+.dialogue-nav-buttons {
+    position: absolute;
+    bottom: 28px;
+    right: 20px;
+    display: flex;
+    gap: 10px;
+    z-index: 6;
+    pointer-events: auto;
+}
+
+.nav-control-btn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+}
+
+.nav-control-btn:hover {
+    background: rgba(255,255,255,0.18);
+    transform: scale(1.12);
+}
+
+.nav-control-btn:active {
+    transform: scale(0.94);
+}
+
+.nav-control-btn.disabled,
+.nav-control-btn:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.nav-control-btn i {
+    font-size: 18px;
+}
+
+@media (max-height: 600px) and (orientation: landscape) {
     #content-area {
-        padding: 4px 4px
+        padding: clamp(6px, 1.8vw, 16px);
+        align-items: flex-start;
     }
 
     #view-novel {
-        aspect-ratio: auto;
-        width: 100%;
-        height: 100%;
-        border-radius: 12px
+        max-height: 78vh;
+        margin-top: 0.5vh;
+        border-radius: 20px;
     }
 
     .dialogue-box {
-        padding: 8px 12px;
-        border-radius: 10px 10px 0 0;
-        max-width: 100%;
-        border-top: 1px solid var(--ui-border-color)
+        bottom: 6px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 148px);
+        max-width: 660px;
+        padding: 10px 14px;
+        background: rgba(29,29,31,0.58);
     }
 
-    .dialogue-text {
-        font-size: 13px;
-        line-height: 1.4;
-        margin-bottom: 6px;
-        max-height: 22vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain
-    }
-
-    .character-name {
-        font-size: 12px;
+    #speaker-name {
         margin-bottom: 4px;
-        padding-bottom: 4px
+        padding-bottom: 4px;
+        font-size: 13px;
+        border-bottom-width: 1px;
     }
 
-    .dialogue-controls {
-        display: none
+    #dialogue-content {
+        max-height: 2.8em;
+        font-size: 14px;
+        line-height: 1.45;
+        margin-bottom: 6px;
     }
 
     .dialogue-bottom-controls {
-        margin-top: 6px
+        margin-top: 4px;
     }
 
-    .floating-nav-btn {
-        opacity: 1
+    .dialogue-nav-buttons {
+        bottom: 10px;
+        right: auto;
+        left: 0;
+        right: 0;
+        justify-content: space-between;
+        padding: 0 16px;
+    }
+
+    .nav-control-btn {
+        width: 48px;
+        height: 48px;
+    }
+
+    .nav-control-btn i {
+        font-size: 22px;
     }
 
     .character-layer {
-        top: 4px;
-        left: 4px;
-        right: 4px;
-        bottom: 4px
+        bottom: clamp(60px, 8vh, 110px);
     }
 
     .cg-layer {
-        top: 8px;
-        left: 8px;
-        right: 8px;
-        bottom: 8px
-    }
-
-    .character-sprite.dynamic {
-        max-height: 90vh
-    }
-}
-
-/* === 手机竖屏适配 === */
-@media (max-width: 480px) and (orientation: portrait) {
-    #content-area {
-        padding: 8px 4px
-    }
-
-    #view-novel {
-        aspect-ratio: auto;
-        width: 100%;
-        height: 100%;
-        border-radius: 16px
-    }
-
-    .dialogue-box {
-        padding: 12px 12px;
-        border-radius: 14px 14px 0 0;
-        max-width: 100%
-    }
-
-    .dialogue-text {
-        font-size: 14px;
-        max-height: 30vh;
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        overscroll-behavior: contain
-    }
-
-    .dialogue-controls {
-        display: none
-    }
-
-    .floating-nav-btn {
-        opacity: 1
+        bottom: clamp(100px, 14vh, 180px);
     }
 }
 </style>
@@ -4321,38 +4282,33 @@
                             </div>
                         </nav>
                     </div>
-                    <button class="floating-nav-btn" id="floating-prev-btn" aria-label="上一句">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="floating-nav-btn" id="floating-next-btn" aria-label="下一句">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
-            </div>
-        </main>
-        <div class="dialogue-box">
-            <div class="character-name" id="speaker-name"></div>
-            <p class="dialogue-text" id="dialogue-content"></p>
-            <div class="dialogue-bottom-controls">
-                <div class="player-choice-input" id="player-choice-input" style="display:none">
-                    <div class="choice-input-controls">
-                        <i class="fas fa-comment-dots choice-input-icon"></i>
-                        <input id="choice-text-input" placeholder="输入你想要说的话或采取的行动..."/>
-                        <button id="add-choice-btn" class="choice-add-btn">
-                            <i class="fas fa-plus"></i>
+                    <div class="dialogue-box">
+                        <div class="character-name" id="speaker-name"></div>
+                        <p class="dialogue-text" id="dialogue-content"></p>
+                        <div class="dialogue-bottom-controls">
+                            <div class="player-choice-input" id="player-choice-input" style="display:none">
+                                <div class="choice-input-controls">
+                                    <i class="fas fa-comment-dots choice-input-icon"></i>
+                                    <input id="choice-text-input" placeholder="输入你想要说的话或采取的行动..."/>
+                                    <button id="add-choice-btn" class="choice-add-btn">
+                                        <i class="fas fa-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="dialogue-controls"></div>
+                        </div>
+                    </div>
+                    <div class="dialogue-nav-buttons">
+                        <button class="nav-control-btn" id="prev-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="nav-control-btn" id="next-btn">
+                            <i class="fas fa-chevron-right"></i>
                         </button>
                     </div>
                 </div>
-                <div class="dialogue-controls">
-                    <button class="control-btn" id="prev-btn">
-                        <i class="fas fa-chevron-left"></i>
-                    </button>
-                    <button class="control-btn" id="next-btn">
-                        <i class="fas fa-chevron-right"></i>
-                    </button>
-                </div>
             </div>
-        </div>
+        </main>
 
         <!-- 只保留设置菜单，删除其他所有UI菜单 -->
         <div id="music-player-panel" class="music-player-panel">
