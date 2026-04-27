@@ -2757,42 +2757,53 @@
         }
 
         .dialogue-controls {
+            position: absolute;
+            bottom: -54px;
+            right: 22px;
             display: flex;
-            gap: 12px;
+            gap: 10px;
             flex-shrink: 0;
-            margin-left: auto
+            margin-left: 0;
+            pointer-events: auto
         }
 
         .control-btn {
-            width: 36px;
-            height: 36px;
+            width: 42px;
+            height: 42px;
             border: none;
-            background: rgba(0,0,0,0);
-            color: var(--text-color);
+            border-radius: 50%;
+            background: rgba(0,0,0,0.5);
+            color: #fff;
             cursor: pointer;
-            transition: all .3s ease;
+            transition: all .25s ease;
             display: flex;
             align-items: center;
-            justify-content: center
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px)
         }
 
         .control-btn:hover {
-            color: var(--primary-color);
-            transform: scale(1.2)
+            background: rgba(255,255,255,0.18);
+            color: #fff;
+            transform: scale(1.12)
         }
 
         .control-btn:active {
-            transform: scale(1)
+            transform: scale(.94)
         }
 
         .control-btn.disabled,.control-btn:disabled {
-            color: var(--text-color-secondary);
+            opacity: .25;
             cursor: not-allowed;
-            opacity: .5
+            background: rgba(0,0,0,0.5);
+            color: #fff
         }
 
         .control-btn.disabled:hover,.control-btn:disabled:hover {
-            color: var(--text-color-secondary);
+            background: rgba(0,0,0,0.5);
+            color: #fff;
             transform: none
         }
 
@@ -3328,6 +3339,7 @@
             transform: translateY(-10px) scale(0.95);
             transition: all .3s cubic-bezier(0.25,0.46,0.45,0.94);
             z-index: 1000;
+            box-sizing: border-box;
             max-width: calc(100vw - 40px);
             max-height: calc(100vh - 100px);
             overflow-y: auto;
@@ -3343,7 +3355,16 @@
 
         .music-player-panel {
             top: 170px;
+            right: 20px;
             width: 360px;
+            box-sizing: border-box;
+        }
+
+        @media (max-height: 800px) {
+            .music-player-panel {
+                top: clamp(60px, 12vh, 140px);
+                max-height: calc(100vh - 80px);
+            }
         }
 
         .settings-popover::-webkit-scrollbar {
@@ -3372,8 +3393,7 @@
                 transform: translate(-50%,-50%) scale(0.95);
                 width: calc(100vw - 40px);
                 max-width: 400px;
-                max-height: calc(100vh - 40px);
-                overflow-y: auto;
+                max-height: calc(100vh - 80px)
             }
 
             .settings-popover.active,
@@ -3383,13 +3403,11 @@
         }
 
         @media (max-width: 480px) {
-            .settings-popover,
-            .music-player-panel {
+            .settings-popover {
                 width:calc(100vw - 20px);
                 padding: 16px;
                 border-radius: 12px;
-                max-height: calc(100vh - 40px);
-                min-height: auto;
+                max-height: calc(100vh - 60px)
             }
         }
 
@@ -4116,183 +4134,83 @@
     border-radius: 2px;
 }
 
-.dialogue-nav-buttons {
-    position: absolute;
-    bottom: 28px;
-    right: 20px;
-    display: flex;
-    gap: 10px;
-    z-index: 6;
-    pointer-events: auto;
-}
+@media (max-height: 600px) and (orientation: landscape) {
+    #content-area {
+        padding: clamp(4px, 1.2vw, 10px);
+        align-items: flex-start;
+    }
 
-.nav-control-btn {
-    width: 42px;
-    height: 42px;
-    border: none;
-    border-radius: 50%;
-    background: rgba(0,0,0,0.5);
-    color: #fff;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.25s ease;
-    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-}
+    #view-novel {
+        max-height: 68vh;
+        margin-top: 0;
+        border-radius: 16px;
+        overflow: visible;
+    }
 
-.nav-control-btn:hover {
-    background: rgba(255,255,255,0.18);
-    transform: scale(1.12);
-}
-
-.nav-control-btn:active {
-    transform: scale(0.94);
-}
-
-.nav-control-btn.disabled,
-.nav-control-btn:disabled {
-    opacity: 0.25;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-.nav-control-btn i {
-    font-size: 18px;
-}
-
-@media (max-width: 768px) {
     .dialogue-box {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        max-width: 100%;
-        transform: none;
-        border-radius: 20px 20px 0 0;
-        padding: 14px 20px 80px;
-        z-index: 100;
-        background: rgba(29,29,31,0.85);
-        box-shadow: 0 -8px 36px rgba(0,0,0,0.5);
+        position: absolute;
+        top: calc(100% + 4px);
+        bottom: auto;
+        left: 50%;
+        transform: translateX(-50%);
+        width: calc(100% - 32px);
+        max-width: 620px;
+        padding: 8px 12px;
+        background: rgba(29,29,31,0.6);
+        max-height: 26vh;
+        overflow: hidden;
     }
 
     #speaker-name {
-        font-size: 15px;
-        margin-bottom: 6px;
-        padding-bottom: 6px;
+        margin-bottom: 3px;
+        padding-bottom: 3px;
+        font-size: 13px;
+        border-bottom-width: 1px;
     }
 
     #dialogue-content {
-        max-height: 20vh;
+        max-height: 4em;
         overflow-y: auto;
-        font-size: 16px;
-        line-height: 1.55;
-        margin-bottom: 2px;
+        font-size: 13px;
+        line-height: 1.4;
+        margin-bottom: 4px;
     }
 
     .dialogue-bottom-controls {
         margin-top: 2px;
     }
 
-    .dialogue-nav-buttons {
-        position: fixed;
-        bottom: 16px;
-        left: 0;
-        right: 0;
+    .dialogue-controls {
+        position: static;
+        bottom: auto;
+        right: auto;
         display: flex;
-        justify-content: space-between;
-        padding: 0 24px;
-        z-index: 101;
-        pointer-events: auto;
+        gap: 6px;
+        justify-content: flex-end;
     }
 
-    .nav-control-btn {
-        width: 48px;
-        height: 48px;
+    .control-btn {
+        width: 34px;
+        height: 34px;
     }
 
-    .nav-control-btn i {
-        font-size: 22px;
-    }
-
-    .character-layer {
-        bottom: clamp(100px, 14vh, 170px);
-    }
-
-    .cg-layer {
-        bottom: clamp(140px, 20vh, 230px);
-    }
-}
-
-@media (max-height: 600px) and (orientation: landscape) {
-    #content-area {
-        padding: clamp(6px, 1.8vw, 16px);
-        align-items: flex-start;
-    }
-
-    #view-novel {
-        max-height: 78vh;
-        margin-top: 0.5vh;
-        border-radius: 20px;
-    }
-
-    .dialogue-box {
-        position: absolute;
-        bottom: 6px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: calc(100% - 148px);
-        max-width: 660px;
-        padding: 10px 14px;
-        background: rgba(29,29,31,0.58);
-        border-radius: 20px;
-    }
-
-    #speaker-name {
-        margin-bottom: 4px;
-        padding-bottom: 4px;
-        font-size: 13px;
-        border-bottom-width: 1px;
-    }
-
-    #dialogue-content {
-        max-height: 2.8em;
-        font-size: 14px;
-        line-height: 1.45;
-        margin-bottom: 6px;
-    }
-
-    .dialogue-bottom-controls {
-        margin-top: 4px;
-    }
-
-    .dialogue-nav-buttons {
-        position: absolute;
-        bottom: 10px;
-        left: 0;
-        right: 0;
-        justify-content: space-between;
-        padding: 0 16px;
-    }
-
-    .nav-control-btn {
-        width: 48px;
-        height: 48px;
-    }
-
-    .nav-control-btn i {
-        font-size: 22px;
+    .control-btn i {
+        font-size: 15px;
     }
 
     .character-layer {
-        bottom: clamp(60px, 8vh, 110px);
+        bottom: clamp(50px, 7vh, 100px);
     }
 
     .cg-layer {
-        bottom: clamp(100px, 14vh, 180px);
+        bottom: clamp(80px, 12vh, 160px);
+    }
+
+    .music-player-panel {
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 16px;
     }
 }
 </style>
@@ -4364,16 +4282,15 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="dialogue-controls"></div>
+                            <div class="dialogue-controls">
+                                <button class="control-btn" id="prev-btn">
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="control-btn" id="next-btn">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="dialogue-nav-buttons">
-                        <button class="nav-control-btn" id="prev-btn">
-                            <i class="fas fa-chevron-left"></i>
-                        </button>
-                        <button class="nav-control-btn" id="next-btn">
-                            <i class="fas fa-chevron-right"></i>
-                        </button>
                     </div>
                 </div>
             </div>
