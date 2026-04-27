@@ -3,8 +3,8 @@
     <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="color-scheme" content="dark light">
-    <title>千夜柑橘 · 视觉小说舞台</title>
-    <meta name="description" content="千夜柑橘视觉小说舞台体验">
+    <title>视觉小说前端</title>
+    <meta name="description" content="视觉小说">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" integrity="sha512-5VSZ94c6qdN934V3CyMfCVxYvBy06SnVAk0nnBYnCTsRmRykGGBqBPdZiZsa1+lZeXqIu58V38eRcVbk5C29Eg==" crossorigin="anonymous" referrerpolicy="no-referrer">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js" integrity="sha512-EQg6Z9erjRzCQXDpUe1koXSPoaqeEniT730cdpShUMHbOWcZH/5LiCFYI8a9kaI0s5momkGLumZ5qX6LzN04hA==" crossorigin="anonymous"></script>
@@ -817,9 +817,9 @@
                 }
                 async displayCurrentDialogue() {
                     if (this.currentDialogueIndex < 0 || this.currentDialogueIndex >= this.dialogueHistory.length)
-                        return;
+                        return console.log('❌ displayCurrentDialogue: 索引无效', this.currentDialogueIndex, this.dialogueHistory.length);
                     const e = this.dialogueHistory[this.currentDialogueIndex];
-                    console.log('🎬 显示对话:', e),
+                    console.log('🎬 显示对话 #', this.currentDialogueIndex, ':', e),
                     e.backgroundUrl && e.backgroundUrl !== this.currentBackground && (console.log('🖼️ 推进到背景切换点，开始切换背景:', e.backgroundUrl),
                     console.log('🧹 推进到背景切换，清理所有立绘'),
                     await this.stageManager.clearStage(),
@@ -909,10 +909,12 @@
                     !0)
                 }
                 async navigateNext() {
+                    console.log('🔍 navigateNext 检查: currentDialogueIndex=', this.currentDialogueIndex, 'dialogueHistory.length=', this.dialogueHistory.length);
                     if (this.textAnimationManager.isPlaying())
                         return this.textAnimationManager.skipAnimation(),
                         !0;
                     const e = this.dialogueHistory[this.currentDialogueIndex];
+                    console.log('🔍 当前对话:', e);
                     return e && 'choice' === e.type ? (console.log('🚫 当前是选择界面，禁止导航到下一条对话'),
                     !1) : this.currentDialogueIndex < this.dialogueHistory.length - 1 && (this.currentDialogueIndex++,
                     await this.displayCurrentDialogue(),
@@ -2212,6 +2214,21 @@
     }
     );
 </script>
+<script>
+    $(function() {
+        $('#floating-prev-btn').on('click', function() {
+            $('#prev-btn').trigger('click');
+        });
+        $('#floating-next-btn').on('click', function() {
+            $('#next-btn').trigger('click');
+        });
+        const syncFloatingBtnState = function() {
+            $('#floating-prev-btn').toggleClass('disabled', $('#prev-btn').prop('disabled'));
+            $('#floating-next-btn').toggleClass('disabled', $('#next-btn').prop('disabled'));
+        };
+        setInterval(syncFloatingBtnState, 500);
+    });
+</script>
 <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500&family=Kaiti+SC:wght@400;700&family=Dancing+Script:wght@400;700&family=ZCOOL+KuaiLe&family=Press+Start+2P&family=Heiti+SC:wght@400;700&display=swap');
         :root {
@@ -2328,13 +2345,16 @@
             display: flex;
             flex-direction: column;
             width: 100%;
+            height: 100dvh;
             min-height: 100vh;
             position: relative;
             background-color: var(--app-background, #101828);
-            transition: background-color .3s ease
+            transition: background-color .3s ease;
+            overflow: hidden
         }
 
-        #app-container.modal-active>#content-area {
+        #app-container.modal-active>#content-area,
+        #app-container.modal-active>.dialogue-box {
             filter: blur(4px);
             transform: scale(0.98);
             transition: all .4s cubic-bezier(0.25,0.46,0.45,0.94)
@@ -2350,15 +2370,18 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: clamp(28px, 5.5vw, 76px);
+    padding: clamp(12px, 2vw, 32px) clamp(12px, 2vw, 48px);
+    min-height: 0
 }
 
 #view-novel {
     position: relative;
-    width: min(100vw, calc(92vh * 16 / 9), 1730px);
+    width: 100%;
+    max-width: 1730px;
+    height: auto;
+    max-height: 100%;
     aspect-ratio: 16 / 9;
-    max-height: 92vh;
-    border-radius: 32px;
+    border-radius: 24px;
     overflow: hidden;
     background-color: var(--stage-fallback-bg, #101828);
     background-size: cover;
@@ -2366,6 +2389,7 @@
     background-position: center center;
     box-shadow: 0 30px 80px rgba(0,0,0,0.55);
     isolation: isolate;
+    flex-shrink: 0
 }
 
 .background-overlay {
@@ -2383,10 +2407,10 @@
 
         .character-layer {
             position: absolute;
-            top: clamp(20px, 3vh, 32px);
-            left: clamp(20px, 3vw, 32px);
-            right: clamp(20px, 3vw, 32px);
-            bottom: clamp(120px, 8vh, 180px);
+            top: clamp(16px, 2vh, 24px);
+            left: clamp(16px, 2vw, 24px);
+            right: clamp(16px, 2vw, 24px);
+            bottom: clamp(16px, 2vh, 24px);
             width: auto;
             height: auto;
             z-index: 2;
@@ -2397,10 +2421,10 @@
 
         .cg-layer {
             position: absolute;
-            top: clamp(40px, 5vh, 72px);
-            left: clamp(48px, 5vw, 96px);
-            right: clamp(48px, 5vw, 96px);
-            bottom: clamp(160px, 12vh, 240px);
+            top: clamp(32px, 4vh, 56px);
+            left: clamp(32px, 4vw, 72px);
+            right: clamp(32px, 4vw, 72px);
+            bottom: clamp(32px, 4vh, 56px);
             z-index: 4;
             opacity: 0;
             visibility: hidden;
@@ -2720,21 +2744,21 @@
         }
 
         .dialogue-box {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
+            position: relative;
+            width: 100%;
             max-width: 1000px;
+            margin: 0 auto;
+            flex-shrink: 0;
             z-index: 5;
             background: var(--ui-bg-heavy);
             backdrop-filter: blur(var(--blur-intensity));
             -webkit-backdrop-filter: blur(var(--blur-intensity));
-            border-radius: 20px;
-            padding: 24px;
+            border-radius: 18px 18px 0 0;
+            padding: 16px clamp(16px, 3vw, 40px);
             transition: background-color .5s ease,border-color .5s ease;
-            box-shadow: 0 8px 32px var(--shadow-color-medium);
+            box-shadow: 0 -4px 24px var(--shadow-color-medium);
             border: 1px solid var(--ui-border-color);
+            border-bottom: none;
             pointer-events: auto
         }
 
@@ -2796,6 +2820,51 @@
 
         .control-btn i {
             font-size: 18px
+        }
+
+        .floating-nav-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: rgba(0,0,0,0.35);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 20;
+            pointer-events: auto;
+            transition: background .25s ease, transform .25s ease, opacity .25s ease;
+            opacity: 0
+        }
+
+        .floating-nav-btn:hover {
+            background: rgba(0,0,0,0.55);
+            transform: translateY(-50%) scale(1.1)
+        }
+
+        .floating-nav-btn:active {
+            transform: translateY(-50%) scale(0.95)
+        }
+
+        .floating-nav-btn.disabled,
+        .floating-nav-btn:disabled {
+            opacity: 0 !important;
+            pointer-events: none
+        }
+
+        #floating-prev-btn {
+            left: 10px
+        }
+
+        #floating-next-btn {
+            right: 10px
         }
 
         .dialogue-bottom-controls {
@@ -3190,138 +3259,6 @@
             }
         }
         /* === 视觉小说部分结束 === */
-
-        /* === 横屏适配（手机横屏模式）=== */
-        @media (max-height: 560px) and (orientation: landscape) {
-            #content-area {
-                align-items: flex-start;
-                padding: 4px;
-            }
-
-            #view-novel {
-                max-height: calc(100vh - 60px);
-                border-radius: 16px;
-                width: min(100vw, calc((100vh - 60px) * 16 / 9));
-            }
-
-            .character-layer {
-                bottom: 54px;
-                top: 4px;
-                left: 4px;
-                right: 4px;
-            }
-
-            .cg-layer {
-                bottom: 74px;
-                top: 8px;
-                left: 8px;
-                right: 8px;
-            }
-
-            .dialogue-box {
-                bottom: 4px;
-                width: calc(100% - 16px);
-                padding: 6px 12px;
-                border-radius: 12px;
-                max-width: none;
-            }
-
-            .character-name {
-                display: inline;
-                font-size: 13px;
-                margin-bottom: 0;
-                margin-right: 8px;
-                padding-bottom: 0;
-                border-bottom: none;
-            }
-
-            .character-name:not(:empty)::after {
-                content: ':';
-                margin-left: 2px;
-            }
-
-            .dialogue-text {
-                display: inline;
-                font-size: 13px;
-                line-height: 1.5;
-                margin-bottom: 0;
-                max-height: 1.5em;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                max-width: calc(100% - 80px);
-                vertical-align: baseline;
-            }
-
-            .dialogue-bottom-controls {
-                position: absolute;
-                top: 4px;
-                right: 8px;
-                margin-top: 0;
-                gap: 6px;
-            }
-
-            .dialogue-controls {
-                gap: 4px;
-            }
-
-            .control-btn {
-                width: 28px;
-                height: 28px;
-            }
-
-            .control-btn i {
-                font-size: 14px;
-            }
-
-            .player-choice-input {
-                flex: 0;
-            }
-
-            .player-choice-input .choice-input-controls {
-                padding: 4px 8px;
-            }
-
-            .player-choice-input .choice-input-controls #choice-text-input {
-                font-size: 12px;
-                padding: 4px 6px;
-            }
-
-            .dialogue-choices {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-            }
-
-            .dialogue-choice-item {
-                flex: 1 1 auto;
-                min-width: 120px;
-            }
-
-            .dialogue-choice-btn {
-                padding: 6px 10px;
-                font-size: 12px;
-            }
-
-            .top-header-container {
-                top: 4px;
-                right: 4px;
-            }
-
-            .nav-btn {
-                width: 36px;
-                height: 36px;
-            }
-
-            .nav-icon {
-                width: 24px;
-                height: 24px;
-            }
-
-            .nav-icon i {
-                font-size: 14px;
-            }
-        }
 
         /* === 设置菜单相关UI部分 === */
         .top-header-container {
@@ -4225,6 +4162,109 @@
     font-family: 'Heiti SC', sans-serif;
     font-weight: 700;
 }
+
+/* === 手机横屏适配 === */
+@media (orientation: landscape) and (max-height: 500px) {
+    #content-area {
+        padding: 4px 4px
+    }
+
+    #view-novel {
+        aspect-ratio: auto;
+        width: 100%;
+        height: 100%;
+        border-radius: 12px
+    }
+
+    .dialogue-box {
+        padding: 8px 12px;
+        border-radius: 10px 10px 0 0;
+        max-width: 100%;
+        border-top: 1px solid var(--ui-border-color)
+    }
+
+    .dialogue-text {
+        font-size: 13px;
+        line-height: 1.4;
+        margin-bottom: 6px;
+        max-height: 22vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain
+    }
+
+    .character-name {
+        font-size: 12px;
+        margin-bottom: 4px;
+        padding-bottom: 4px
+    }
+
+    .dialogue-controls {
+        display: none
+    }
+
+    .dialogue-bottom-controls {
+        margin-top: 6px
+    }
+
+    .floating-nav-btn {
+        opacity: 1
+    }
+
+    .character-layer {
+        top: 4px;
+        left: 4px;
+        right: 4px;
+        bottom: 4px
+    }
+
+    .cg-layer {
+        top: 8px;
+        left: 8px;
+        right: 8px;
+        bottom: 8px
+    }
+
+    .character-sprite.dynamic {
+        max-height: 90vh
+    }
+}
+
+/* === 手机竖屏适配 === */
+@media (max-width: 480px) and (orientation: portrait) {
+    #content-area {
+        padding: 8px 4px
+    }
+
+    #view-novel {
+        aspect-ratio: auto;
+        width: 100%;
+        height: 100%;
+        border-radius: 16px
+    }
+
+    .dialogue-box {
+        padding: 12px 12px;
+        border-radius: 14px 14px 0 0;
+        max-width: 100%
+    }
+
+    .dialogue-text {
+        font-size: 14px;
+        max-height: 30vh;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        overscroll-behavior: contain
+    }
+
+    .dialogue-controls {
+        display: none
+    }
+
+    .floating-nav-btn {
+        opacity: 1
+    }
+}
 </style>
 <body data-theme="dark">
     <div id="app-container">
@@ -4281,32 +4321,38 @@
                             </div>
                         </nav>
                     </div>
-                    <div class="dialogue-box">
-                        <div class="character-name" id="speaker-name"></div>
-                        <p class="dialogue-text" id="dialogue-content"></p>
-                        <div class="dialogue-bottom-controls">
-                            <div class="player-choice-input" id="player-choice-input" style="display:none">
-                                <div class="choice-input-controls">
-                                    <i class="fas fa-comment-dots choice-input-icon"></i>
-                                    <input id="choice-text-input" placeholder="输入你想要说的话或采取的行动..."/>
-                                    <button id="add-choice-btn" class="choice-add-btn">
-                                        <i class="fas fa-plus"></i>
-                                    </button>
-                                </div>
-                            </div>
-                            <div class="dialogue-controls">
-                                <button class="control-btn" id="prev-btn">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <button class="control-btn" id="next-btn">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+                    <button class="floating-nav-btn" id="floating-prev-btn" aria-label="上一句">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="floating-nav-btn" id="floating-next-btn" aria-label="下一句">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
         </main>
+        <div class="dialogue-box">
+            <div class="character-name" id="speaker-name"></div>
+            <p class="dialogue-text" id="dialogue-content"></p>
+            <div class="dialogue-bottom-controls">
+                <div class="player-choice-input" id="player-choice-input" style="display:none">
+                    <div class="choice-input-controls">
+                        <i class="fas fa-comment-dots choice-input-icon"></i>
+                        <input id="choice-text-input" placeholder="输入你想要说的话或采取的行动..."/>
+                        <button id="add-choice-btn" class="choice-add-btn">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="dialogue-controls">
+                    <button class="control-btn" id="prev-btn">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button class="control-btn" id="next-btn">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
 
         <!-- 只保留设置菜单，删除其他所有UI菜单 -->
         <div id="music-player-panel" class="music-player-panel">
@@ -4559,6 +4605,7 @@
         </div>
     </div>
 </body>
+
 
 
 
