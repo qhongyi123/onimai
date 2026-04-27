@@ -2457,7 +2457,7 @@
             opacity: 1;
             visibility: visible;
             pointer-events: auto;
-            z-index: 6;
+            z-index: 20;
         }
 
         .ui-layer {
@@ -2496,6 +2496,27 @@
 
         .cg-close-btn:active {
             transform: scale(0.95);
+        }
+
+        @media (max-width: 768px) {
+            .cg-layer {
+                top: clamp(16px, 3vh, 40px);
+                bottom: clamp(100px, 10vh, 180px);
+                padding: clamp(4px, 1vw, 14px);
+                border-radius: 16px;
+            }
+
+            .cg-layer .cg-image {
+                border-radius: 16px;
+                box-shadow: 0 10px 36px rgba(0,0,0,0.45);
+            }
+
+            .cg-close-btn {
+                width: 42px;
+                height: 42px;
+                top: 6px;
+                right: 6px;
+            }
         }
 
         body.cg-fullscreen-open {
@@ -4222,6 +4243,25 @@
 
     .character-layer {
         bottom: clamp(60px, 8vh, 100px);
+    }
+
+    .cg-layer {
+        top: clamp(8px, 2vh, 28px);
+        bottom: clamp(60px, 10vh, 120px);
+        padding: clamp(4px, 1vw, 12px);
+        border-radius: 14px;
+    }
+
+    .cg-layer .cg-image {
+        border-radius: 14px;
+        box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+    }
+
+    .cg-close-btn {
+        width: 40px;
+        height: 40px;
+        top: 4px;
+        right: 4px;
     }
 
     .music-player-panel {
