@@ -4114,43 +4114,49 @@
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
+    #content-area {
+        align-items: flex-start;
+        padding: clamp(2px, 1vw, 8px);
+    }
+
     #view-novel {
         overflow: visible;
+        margin-top: 0;
     }
 
     .dialogue-box {
         bottom: auto;
-        top: calc(100% - 52px);
-        max-height: 30vh;
-        padding: 8px 14px;
-        border-radius: 14px 14px 0 0;
+        top: calc(100% - 58px);
+        max-height: calc(8vh + 58px);
+        padding: 5px 12px;
+        border-radius: 12px 12px 0 0;
     }
 
     #speaker-name {
-        margin-bottom: 3px;
-        padding-bottom: 3px;
-        font-size: 13px;
+        margin-bottom: 2px;
+        padding-bottom: 2px;
+        font-size: 12px;
         border-bottom-width: 1px;
     }
 
     #dialogue-content {
-        max-height: calc(30vh - 64px);
-        font-size: 14px;
+        max-height: calc(8vh + 58px - 52px);
+        font-size: 13px;
         line-height: 1.5;
-        margin-bottom: 4px;
+        margin-bottom: 2px;
     }
 
     .dialogue-bottom-controls {
-        margin-top: 3px;
+        margin-top: 2px;
     }
 
     .control-btn {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
     }
 
     .control-btn i {
-        font-size: 15px;
+        font-size: 14px;
     }
 
     .character-layer {
