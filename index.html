@@ -2757,53 +2757,42 @@
         }
 
         .dialogue-controls {
-            position: absolute;
-            bottom: -54px;
-            right: 22px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
             flex-shrink: 0;
-            margin-left: 0;
-            pointer-events: auto
+            margin-left: auto
         }
 
         .control-btn {
-            width: 42px;
-            height: 42px;
+            width: 36px;
+            height: 36px;
             border: none;
-            border-radius: 50%;
-            background: rgba(0,0,0,0.5);
-            color: #fff;
+            background: rgba(0,0,0,0);
+            color: var(--text-color);
             cursor: pointer;
-            transition: all .25s ease;
+            transition: all .3s ease;
             display: flex;
             align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 14px rgba(0,0,0,0.4);
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px)
+            justify-content: center
         }
 
         .control-btn:hover {
-            background: rgba(255,255,255,0.18);
-            color: #fff;
-            transform: scale(1.12)
+            color: var(--primary-color);
+            transform: scale(1.2)
         }
 
         .control-btn:active {
-            transform: scale(.94)
+            transform: scale(1)
         }
 
         .control-btn.disabled,.control-btn:disabled {
-            opacity: .25;
+            color: var(--text-color-secondary);
             cursor: not-allowed;
-            background: rgba(0,0,0,0.5);
-            color: #fff
+            opacity: .5
         }
 
         .control-btn.disabled:hover,.control-btn:disabled:hover {
-            background: rgba(0,0,0,0.5);
-            color: #fff;
+            color: var(--text-color-secondary);
             transform: none
         }
 
@@ -3339,7 +3328,6 @@
             transform: translateY(-10px) scale(0.95);
             transition: all .3s cubic-bezier(0.25,0.46,0.45,0.94);
             z-index: 1000;
-            box-sizing: border-box;
             max-width: calc(100vw - 40px);
             max-height: calc(100vh - 100px);
             overflow-y: auto;
@@ -3355,16 +3343,7 @@
 
         .music-player-panel {
             top: 170px;
-            right: 20px;
             width: 360px;
-            box-sizing: border-box;
-        }
-
-        @media (max-height: 800px) {
-            .music-player-panel {
-                top: clamp(60px, 12vh, 140px);
-                max-height: calc(100vh - 80px);
-            }
         }
 
         .settings-popover::-webkit-scrollbar {
@@ -4135,30 +4114,16 @@
 }
 
 @media (max-height: 600px) and (orientation: landscape) {
-    #content-area {
-        padding: clamp(4px, 1.2vw, 10px);
-        align-items: flex-start;
-    }
-
     #view-novel {
-        max-height: 68vh;
-        margin-top: 0;
-        border-radius: 16px;
         overflow: visible;
     }
 
     .dialogue-box {
-        position: absolute;
-        top: calc(100% + 4px);
         bottom: auto;
-        left: 50%;
-        transform: translateX(-50%);
-        width: calc(100% - 32px);
-        max-width: 620px;
-        padding: 8px 12px;
-        background: rgba(29,29,31,0.6);
-        max-height: 26vh;
-        overflow: hidden;
+        top: calc(100% - 52px);
+        max-height: 30vh;
+        padding: 8px 14px;
+        border-radius: 14px 14px 0 0;
     }
 
     #speaker-name {
@@ -4169,29 +4134,19 @@
     }
 
     #dialogue-content {
-        max-height: 4em;
-        overflow-y: auto;
-        font-size: 13px;
-        line-height: 1.4;
+        max-height: calc(30vh - 64px);
+        font-size: 14px;
+        line-height: 1.5;
         margin-bottom: 4px;
     }
 
     .dialogue-bottom-controls {
-        margin-top: 2px;
-    }
-
-    .dialogue-controls {
-        position: static;
-        bottom: auto;
-        right: auto;
-        display: flex;
-        gap: 6px;
-        justify-content: flex-end;
+        margin-top: 3px;
     }
 
     .control-btn {
-        width: 34px;
-        height: 34px;
+        width: 32px;
+        height: 32px;
     }
 
     .control-btn i {
@@ -4199,18 +4154,37 @@
     }
 
     .character-layer {
-        bottom: clamp(50px, 7vh, 100px);
-    }
-
-    .cg-layer {
-        bottom: clamp(80px, 12vh, 160px);
+        bottom: clamp(60px, 8vh, 100px);
     }
 
     .music-player-panel {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%) scale(0.95);
+        width: calc(100vw - 40px);
+        max-width: 400px;
         max-height: calc(100vh - 40px);
-        overflow-y: auto;
-        -webkit-overflow-scrolling: touch;
-        padding: 16px;
+    }
+
+    .music-player-panel.active {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    .settings-popover {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        right: auto;
+        transform: translate(-50%, -50%) scale(0.95);
+        width: calc(100vw - 40px);
+        max-width: 400px;
+        max-height: calc(100vh - 40px);
+    }
+
+    .settings-popover.active {
+        transform: translate(-50%, -50%) scale(1);
     }
 }
 </style>
