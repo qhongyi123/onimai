@@ -4113,6 +4113,53 @@
     border-radius: 2px;
 }
 
+.dialogue-nav-buttons {
+    position: absolute;
+    bottom: 24px;
+    right: 20px;
+    display: flex;
+    gap: 8px;
+    z-index: 11;
+    pointer-events: auto;
+}
+
+.nav-control-btn {
+    width: 42px;
+    height: 42px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.45);
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.nav-control-btn:hover {
+    background: rgba(255,255,255,0.18);
+    transform: scale(1.1);
+}
+
+.nav-control-btn:active {
+    transform: scale(0.94);
+}
+
+.nav-control-btn.disabled,
+.nav-control-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.nav-control-btn i {
+    font-size: 18px;
+}
+
 @media (max-height: 600px) and (orientation: landscape) {
     #content-area {
         align-items: flex-start;
@@ -4128,6 +4175,8 @@
         bottom: auto;
         top: calc(100% - 58px);
         max-height: calc(8vh + 58px);
+        width: calc(100% - 120px);
+        max-width: 660px;
         padding: 5px 12px;
         border-radius: 12px 12px 0 0;
     }
@@ -4140,23 +4189,35 @@
     }
 
     #dialogue-content {
-        max-height: calc(8vh + 58px - 52px);
+        max-height: calc(8vh + 58px - 35px);
         font-size: 13px;
         line-height: 1.5;
         margin-bottom: 2px;
     }
 
     .dialogue-bottom-controls {
-        margin-top: 2px;
+        margin-top: 0;
     }
 
-    .control-btn {
-        width: 28px;
-        height: 28px;
+    .dialogue-nav-buttons {
+        bottom: 80px;
+        right: auto;
+        left: 0;
+        right: 0;
+        justify-content: space-between;
+        padding: 0 8px;
+        pointer-events: none;
     }
 
-    .control-btn i {
-        font-size: 14px;
+    .nav-control-btn {
+        width: 48px;
+        height: 48px;
+        pointer-events: auto;
+        background: rgba(0,0,0,0.55);
+    }
+
+    .nav-control-btn i {
+        font-size: 22px;
     }
 
     .character-layer {
@@ -4262,15 +4323,16 @@
                                     </button>
                                 </div>
                             </div>
-                            <div class="dialogue-controls">
-                                <button class="control-btn" id="prev-btn">
-                                    <i class="fas fa-chevron-left"></i>
-                                </button>
-                                <button class="control-btn" id="next-btn">
-                                    <i class="fas fa-chevron-right"></i>
-                                </button>
-                            </div>
+                            <div class="dialogue-controls"></div>
                         </div>
+                    </div>
+                    <div class="dialogue-nav-buttons">
+                        <button class="nav-control-btn" id="prev-btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button class="nav-control-btn" id="next-btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
             </div>
