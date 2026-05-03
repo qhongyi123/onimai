@@ -1290,7 +1290,54 @@
                     $('#replay-panel-close').off('click.replay').on('click.replay', e => {
                         e.stopPropagation(),
                         this.closeReplayPanel()
-                    });
+                    }),
+                    $('#replay-panel-share').off('click.replay').on('click.replay', e => {
+                        e.stopPropagation(),
+                        this.enterSelectionMode()
+                    }),
+                    $('#replay-confirm-btn').off('click.replay').on('click.replay', e => {
+                        e.stopPropagation();
+                        const t = this._getSelectedEntries();
+                        0 === t.length ? o().warning('请至少选择一条对话进行分享')
+                    : this._showShareModeSelector()
+                    }),
+                    $('#replay-cancel-btn').off('click.replay').on('click.replay', e => {
+                        e.stopPropagation(),
+                        this.exitSelectionMode()
+                    }),
+                    $('#share-dialogue-only-btn').off('click.replayShare').on('click.replayShare', async e => {
+                        e.stopPropagation();
+                        const t = this._getSelectedEntries();
+                        if (t.length > 0) {
+                            this._hideShareModeSelector(),
+                            this.exitSelectionMode();
+                            try {
+                                await this._generateDialogueOnlyImage(t)
+                            } catch (e) {
+                                console.error('生成对话分享图片失败:', e),
+                                o().error('分享图片生成失败，请重试')
+                            }
+                        }
+                    }),
+                    $('#share-game-dialogue-btn').off('click.replayShare').on('click.replayShare', async e => {
+                        e.stopPropagation();
+                        const t = this._getSelectedEntries();
+                        if (t.length > 0) {
+                            this._hideShareModeSelector(),
+                            this.exitSelectionMode();
+                            try {
+                                await this._generateGameDialogueImage(t)
+                            } catch (e) {
+                                console.error('生成游戏界面分享图片失败:', e),
+                                o().error('分享图片生成失败，请重试')
+                            }
+                        }
+                    }),
+                    $('#share-mode-cancel-btn').off('click.replayShare').on('click.replayShare', e => {
+                        e.stopPropagation(),
+                        this._hideShareModeSelector()
+                    })
+                    ;
                 }
                 setupDialogueEvents() {
                     console.log('🔧 设置对话事件...');
@@ -1328,7 +1375,7 @@
                     $('#reset-settings-btn').off('click.settings'),
                     $('#music-play-btn, #music-next-btn, #music-mode-btn').off('click.musicPlayer'),
                     $('#music-progress, #music-volume').off('input.musicPlayer change.musicPlayer'),
-                    $(document).off('click.settings click.musicPlayer click.replay'),
+                    $(document).off('click.settings click.musicPlayer click.replay click.replayShare'),
                     $('.background-color-btn').off('click.settings'),
 
                     $('.theme-btn').on('click.settings', e => {
@@ -1454,7 +1501,11 @@
                     }
                     ),
                     $(document).on('click.replay', e => {
-                        $(e.target).closest('#replay-btn, #replay-panel').length || this.closeReplayPanel()
+                        $('#share-mode-overlay').hasClass('active') || ($(e.target).closest('#replay-btn, #replay-panel').length || this.closeReplayPanel())
+                    }
+                    ),
+                    $('#share-mode-overlay').off('click.replayShare').on('click.replayShare', e => {
+                        e.target === e.currentTarget && this._hideShareModeSelector()
                     }
                     ),
                     $('#font-selector').off('change.settings').on('change.settings', e => {
@@ -1957,27 +2008,194 @@
                     const e = $('#replay-panel');
                     e.hasClass('active') ? this.closeReplayPanel() : this.openReplayPanel()
                 }
-                openReplayPanel() {
-                    this.renderReplayContent(),
-                    $('#replay-panel').addClass('active'),
-                    this.syncModalState()
-                }
                 closeReplayPanel() {
                     $('#replay-panel').removeClass('active'),
+                    this._replaySelectionMode = !1,
+                    this._replaySelectedIndices = new Set,
+                    $('#replay-selection-bar').addClass('is-hidden'),
+                    $('#replay-panel-share').removeClass('is-hidden'),
+                    this._hideShareModeSelector(),
                     this.syncModalState()
                 }
                 renderReplayContent() {
+                    this._replaySelectedIndices = new Set;
                     const e = this.uiController?._currentMemoir || [];
                     if (0 === e.length) {
                         $('#replay-panel-content').html('<div class="replay-empty">暂无对话记录</div>');
                         return
                     }
                     let t = '';
-                    e.forEach(e => {
+                    e.forEach((e, i) => {
                         const n = e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白';
-                        t += `<div class="replay-entry"><div class="replay-speaker">${n}</div><div class="replay-text">${e.text}</div></div>`
+                        t += `<div class="replay-entry selectable" data-replay-index="${i}">
+                            <div class="replay-checkbox"><i class="fas fa-check"></i></div>
+                            <div class="replay-speaker">${n}</div>
+                            <div class="replay-text">${e.text}</div>
+                        </div>`
                     });
-                    $('#replay-panel-content').html(t)
+                    $('#replay-panel-content').html(t),
+                    $('.replay-entry.selectable').off('click.replaySelect').on('click.replaySelect', e => {
+                        this._replaySelectionMode && this._toggleReplaySelection(parseInt($(e.currentTarget).data('replay-index')))
+                    })
+                }
+                openReplayPanel() {
+                    this.renderReplayContent(),
+                    this._replaySelectionMode = !1,
+                    this._replaySelectedIndices = new Set,
+                    $('#replay-panel').addClass('active'),
+                    $('#replay-selection-bar').addClass('is-hidden'),
+                    $('#replay-panel-share').removeClass('is-hidden'),
+                    this.syncModalState()
+                }
+                enterSelectionMode() {
+                    const e = this.uiController?._currentMemoir || [];
+                    if (0 === e.length)
+                        return;
+                    this._replaySelectionMode = !0,
+                    this._replaySelectedIndices = new Set,
+                    $('.replay-entry.selectable').removeClass('selected'),
+                    $('#replay-selection-bar').removeClass('is-hidden'),
+                    $('#replay-panel-share').addClass('is-hidden'),
+                    console.log('📖 进入回放选择模式')
+                }
+                exitSelectionMode() {
+                    this._replaySelectionMode = !1,
+                    this._replaySelectedIndices = new Set,
+                    $('.replay-entry.selectable').removeClass('selected'),
+                    $('#replay-selection-bar').addClass('is-hidden'),
+                    $('#replay-panel-share').removeClass('is-hidden'),
+                    console.log('📖 退出回放选择模式')
+                }
+                _toggleReplaySelection(e) {
+                    Number.isInteger(e) && (this._replaySelectedIndices.has(e) ? this._replaySelectedIndices.delete(e) : this._replaySelectedIndices.add(e),
+                    $(`.replay-entry[data-replay-index="${e}"]`).toggleClass('selected', this._replaySelectedIndices.has(e)))
+                }
+                _getSelectedEntries() {
+                    const e = this.uiController?._currentMemoir || [];
+                    return Array.from(this._replaySelectedIndices).sort((e, t) => e - t).map(t => e[t]).filter(e => e)
+                }
+                _showShareModeSelector() {
+                    $('#share-mode-overlay').addClass('active')
+                }
+                _hideShareModeSelector() {
+                    $('#share-mode-overlay').removeClass('active')
+                }
+                async _loadHtml2Canvas() {
+                    if (window.html2canvas)
+                        return window.html2canvas;
+                    return new Promise((e, t) => {
+                        const a = document.createElement('script');
+                        a.src = 'https://html2canvas.hertzen.com/dist/html2canvas.min.js',
+                        a.onload = () => e(window.html2canvas),
+                        a.onerror = t,
+                        document.head.appendChild(a)
+                    }
+                    )
+                }
+                async _generateDialogueOnlyImage(e) {
+                    await this._loadHtml2Canvas();
+                    const t = document.createElement('div');
+                    t.style.cssText = 'position:fixed;left:-9999px;top:0;width:640px;background:var(--ui-bg-heavy,#1d1d1f);color:var(--text-color,#f5f5f7);padding:0;z-index:-1;font-family:sans-serif;border-radius:16px;overflow:hidden;',
+                    document.body.appendChild(t);
+                    const a = document.createElement('div');
+                    a.style.cssText = 'padding:20px 24px;border-bottom:1px solid var(--ui-border-color,rgba(255,255,255,0.1));display:flex;align-items:center;gap:8px;',
+                    a.innerHTML = '<i class="fas fa-book-open" style="color:var(--primary-color,#0a84ff);font-size:18px;"></i><span style="font-size:16px;font-weight:600;">记忆回放</span>',
+                    t.appendChild(a);
+                    const n = document.createElement('div');
+                    n.style.cssText = 'padding:20px;',
+                    e.forEach(e => {
+                        const t = document.createElement('div');
+                        t.style.cssText = 'margin-bottom:16px;padding:12px 16px;background:var(--ui-bg,rgba(255,255,255,0.05));border-radius:12px;border:1px solid var(--ui-border-color,rgba(255,255,255,0.1));';
+                        const a = document.createElement('div');
+                        a.style.cssText = 'font-size:13px;font-weight:600;color:var(--primary-color,#0a84ff);margin-bottom:6px;',
+                        a.textContent = e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白';
+                        const s = document.createElement('div');
+                        s.style.cssText = 'font-size:14px;line-height:1.6;',
+                        s.textContent = e.text,
+                        t.appendChild(a),
+                        t.appendChild(s),
+                        n.appendChild(t)
+                    }
+                    ),
+                    t.appendChild(n);
+                    const s = await html2canvas(t, {
+                        backgroundColor: null,
+                        scale: 2
+                    });
+                    document.body.removeChild(t),
+                    this._downloadImage(s, '记忆回放_对话.png')
+                }
+                async _generateGameDialogueImage(e) {
+                    await this._loadHtml2Canvas();
+                    const t = document.createElement('div');
+                    t.style.cssText = 'position:fixed;left:-9999px;top:0;width:960px;z-index:-1;font-family:sans-serif;',
+                    document.body.appendChild(t);
+                    const a = document.createElement('div');
+                    a.style.cssText = 'width:100%;aspect-ratio:16/9;position:relative;overflow:hidden;border-radius:16px 16px 0 0;';
+                    const n = $('#content-area').css('background-image');
+                    n && 'none' !== n ? (a.style.backgroundImage = n,
+                    a.style.backgroundSize = 'cover',
+                    a.style.backgroundPosition = 'center center') : a.style.backgroundColor = 'var(--stage-fallback-bg, #101828)';
+                    $('.character-sprite.dynamic').each(function() {
+                        const e = this.cloneNode(!0);
+                        e.style.position = 'absolute',
+                        e.style.bottom = '0',
+                        e.style.height = '100%',
+                        e.style.width = 'auto',
+                        e.classList.remove('breathing-natural', 'breathing-sway', 'breathing-pulse', 'breathing-rhythmic'),
+                        e.style.animation = 'none',
+                        a.appendChild(e)
+                    }
+                    );
+                    const s = $('#cg-layer');
+                    if (s.hasClass('active')) {
+                        const e = s.find('.cg-image').attr('src');
+                        if (e) {
+                            const t = document.createElement('img');
+                            t.src = e,
+                            t.style.cssText = 'position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;z-index:4;',
+                            a.appendChild(t)
+                        }
+                    }
+                    t.appendChild(a);
+                    const i = document.createElement('div');
+                    i.style.cssText = 'padding:20px 24px;background:var(--ui-bg-heavy,#1d1d1f);color:var(--text-color,#f5f5f7);border-radius:0 0 16px 16px;',
+                    e.forEach(e => {
+                        const t = document.createElement('div');
+                        t.style.cssText = 'margin-bottom:14px;padding:10px 14px;background:var(--ui-bg,rgba(255,255,255,0.05));border-radius:10px;border:1px solid var(--ui-border-color,rgba(255,255,255,0.1));';
+                        const a = document.createElement('div');
+                        a.style.cssText = 'font-size:13px;font-weight:600;color:var(--primary-color,#0a84ff);margin-bottom:4px;',
+                        a.textContent = e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白';
+                        const n = document.createElement('div');
+                        n.style.cssText = 'font-size:14px;line-height:1.6;',
+                        n.textContent = e.text,
+                        t.appendChild(a),
+                        t.appendChild(n),
+                        i.appendChild(t)
+                    }
+                    ),
+                    t.appendChild(i);
+                    const o = await html2canvas(t, {
+                        backgroundColor: null,
+                        scale: 2
+                    });
+                    document.body.removeChild(t),
+                    this._downloadImage(o, '记忆回放_游戏界面+对话.png')
+                }
+                _downloadImage(e, t) {
+                    e.toBlob(e => {
+                        if (!e)
+                            return;
+                        const t = URL.createObjectURL(e)
+                          , a = document.createElement('a');
+                        a.href = t,
+                        a.download = '记忆回放共享_' + Date.now() + '.png',
+                        document.body.appendChild(a),
+                        a.click(),
+                        document.body.removeChild(a),
+                        URL.revokeObjectURL(t)
+                    }
+                    , 'image/png')
                 }
                 applyBackgroundColorChoice(e) {
                    backgroundColorManager.saveKey(e),
@@ -2000,8 +2218,14 @@
                     $(document).off('.settings .musicPlayer'),
                     $('#replay-btn').off('.replay'),
                     $('#replay-panel-close').off('.replay'),
+                    $('#replay-panel-share').off('.replay'),
+                    $('#replay-confirm-btn').off('.replay'),
+                    $('#replay-cancel-btn').off('.replay'),
+                    $('#share-dialogue-only-btn').off('.replayShare'),
+                    $('#share-game-dialogue-btn').off('.replayShare'),
+                    $('#share-mode-cancel-btn').off('.replayShare'),
                     $('#replay-toggle').off('.settings'),
-                    $(document).off('.replay'),
+                    $(document).off('.replay .replayShare'),
                     this.closeReplayPanel(),
                     console.log('事件处理器已销毁')
                 }
@@ -4499,6 +4723,210 @@
             font-size: 14px;
         }
 
+        .replay-panel-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .replay-panel-share {
+            width: 32px;
+            height: 32px;
+            border: none;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            color: var(--text-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .replay-panel-share:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.1);
+        }
+
+        .replay-panel-share.is-hidden {
+            display: none;
+        }
+
+        .replay-selection-bar {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 12px 20px;
+            border-top: 1px solid var(--ui-border-color);
+            flex-shrink: 0;
+        }
+
+        .replay-selection-bar.is-hidden {
+            display: none;
+        }
+
+        .replay-selection-btn {
+            padding: 8px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .replay-selection-btn.confirm {
+            background: var(--primary-color);
+            color: #fff;
+        }
+
+        .replay-selection-btn.confirm:hover {
+            opacity: 0.85;
+            transform: translateY(-1px);
+        }
+
+        .replay-selection-btn.cancel {
+            background: var(--ui-bg);
+            color: var(--text-color);
+            border: 1px solid var(--ui-border-color);
+        }
+
+        .replay-selection-btn.cancel:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .replay-entry.selectable {
+            cursor: pointer;
+            position: relative;
+            padding-left: 40px;
+        }
+
+        .replay-entry.selectable:hover {
+            border-color: var(--primary-color);
+            background: var(--primary-color-lighter);
+        }
+
+        .replay-entry.selectable.selected {
+            border-color: var(--primary-color);
+            background: var(--primary-color-light);
+        }
+
+        .replay-checkbox {
+            display: none;
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 22px;
+            height: 22px;
+            border-radius: 6px;
+            border: 2px solid var(--ui-border-color);
+            background: var(--ui-bg);
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+        }
+
+        .replay-entry.selectable .replay-checkbox {
+            display: flex;
+        }
+
+        .replay-entry.selected .replay-checkbox {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .replay-entry.selected .replay-checkbox i {
+            color: #fff;
+            font-size: 12px;
+        }
+
+        .replay-checkbox i {
+            color: transparent;
+            font-size: 12px;
+            transition: color 0.2s ease;
+        }
+
+        .share-mode-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .share-mode-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .share-mode-dialog {
+            background: var(--ui-bg-heavy);
+            backdrop-filter: blur(var(--blur-intensity));
+            -webkit-backdrop-filter: blur(var(--blur-intensity));
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid var(--ui-border-color);
+            box-shadow: 0 12px 48px var(--shadow-color-medium);
+            text-align: center;
+            max-width: 400px;
+            width: 90vw;
+        }
+
+        .share-mode-dialog h3 {
+            margin: 0 0 20px;
+            font-size: 18px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .share-mode-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .share-mode-btn {
+            padding: 12px 24px;
+            border: 1px solid var(--ui-border-color);
+            border-radius: 10px;
+            background: var(--ui-bg);
+            color: var(--text-color);
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-weight: 500;
+        }
+
+        .share-mode-btn:hover {
+            border-color: var(--primary-color);
+            background: var(--primary-color-light);
+            transform: translateY(-1px);
+        }
+
+        .share-mode-cancel {
+            padding: 8px 20px;
+            border: none;
+            background: transparent;
+            color: var(--text-color);
+            opacity: 0.6;
+            cursor: pointer;
+            font-size: 13px;
+            transition: opacity 0.2s ease;
+        }
+
+        .share-mode-cancel:hover {
+            opacity: 1;
+        }
+
         @media (max-width: 768px) {
             .replay-panel {
                 width: calc(100vw - 40px);
@@ -4761,9 +5189,9 @@
                         <div class="setting-info">
                             <div class="setting-name">
                                 <i class="fas fa-history"></i>
-                                记忆回放
+                                记忆回放/分享
                             </div>
-                            <div class="setting-description">开启后可在界面左上角查看对话回放</div>
+                            <div class="setting-description">开启后可在界面左上角查看对话回放与分享</div>
                         </div>
                         <div class="setting-control">
                             <label class="modern-toggle">
@@ -4877,12 +5305,31 @@
                     <i class="fas fa-book-open"></i>
                     <span>记忆回放</span>
                 </div>
-                <button class="replay-panel-close" id="replay-panel-close">
-                    <i class="fas fa-times"></i>
-                </button>
+                <div class="replay-panel-header-actions">
+                    <button class="replay-panel-share" id="replay-panel-share" title="分享">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                    <button class="replay-panel-close" id="replay-panel-close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
             </div>
             <div class="replay-panel-content" id="replay-panel-content">
                 <div class="replay-empty">暂无对话记录</div>
+            </div>
+            <div class="replay-selection-bar is-hidden" id="replay-selection-bar">
+                <button class="replay-selection-btn confirm" id="replay-confirm-btn">确认分享</button>
+                <button class="replay-selection-btn cancel" id="replay-cancel-btn">取消</button>
+            </div>
+        </div>
+        <div class="share-mode-overlay" id="share-mode-overlay">
+            <div class="share-mode-dialog">
+                <h3>选择分享方式</h3>
+                <div class="share-mode-options">
+                    <button class="share-mode-btn" id="share-dialogue-only-btn">仅分享对话</button>
+                    <button class="share-mode-btn" id="share-game-dialogue-btn">分享游戏界面+对话</button>
+                </div>
+                <button class="share-mode-cancel" id="share-mode-cancel-btn">取消</button>
             </div>
         </div>
     </div>
