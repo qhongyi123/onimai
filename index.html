@@ -1295,47 +1295,36 @@
                         e.stopPropagation(),
                         this.enterSelectionMode()
                     }),
-                    $('#replay-confirm-btn').off('click.replay').on('click.replay', e => {
+                    $('#replay-confirm-btn').off('click.replay').on('click.replay', async e => {
                         e.stopPropagation();
                         const t = this._getSelectedEntries();
-                        0 === t.length ? o().warning('请至少选择一条对话进行分享')
-                    : this._showShareModeSelector()
-                    }),
-                    $('#replay-cancel-btn').off('click.replay').on('click.replay', e => {
-                        e.stopPropagation(),
-                        this.exitSelectionMode()
-                    }),
-                    $('#share-dialogue-only-btn').off('click.replayShare').on('click.replayShare', async e => {
-                        e.stopPropagation();
-                        const t = this._getSelectedEntries();
-                        if (t.length > 0) {
-                            this._hideShareModeSelector(),
+                        if (0 === t.length)
+                            o().warning('请至少选择一条对话进行分享');
+                        else {
                             this.exitSelectionMode();
                             try {
                                 await this._generateDialogueOnlyImage(t)
                             } catch (e) {
-                                console.error('生成对话分享图片失败:', e),
+                                console.error('生成分享图片失败:', e),
                                 o().error('分享图片生成失败，请重试')
                             }
                         }
                     }),
-                    $('#share-game-dialogue-btn').off('click.replayShare').on('click.replayShare', async e => {
+                    $('#replay-select-all-btn').off('click.replay').on('click.replay', e => {
                         e.stopPropagation();
-                        const t = this._getSelectedEntries();
-                        if (t.length > 0) {
-                            this._hideShareModeSelector(),
-                            this.exitSelectionMode();
-                            try {
-                                await this._generateGameDialogueImage(t)
-                            } catch (e) {
-                                console.error('生成游戏界面分享图片失败:', e),
-                                o().error('分享图片生成失败，请重试')
-                            }
+                        const t = this.uiController?._currentMemoir || [];
+                        if (0 === t.length)
+                            return;
+                        const a = this._replaySelectedIndices.size === t.length;
+                        this._replaySelectedIndices = a ? new Set : new Set(t.map((e, t) => t));
+                        t.forEach((e, t) => {
+                            $(`.replay-entry[data-replay-index="${t}"]`).toggleClass('selected', !a)
                         }
+                        )
                     }),
-                    $('#share-mode-cancel-btn').off('click.replayShare').on('click.replayShare', e => {
+                    $('#replay-cancel-btn').off('click.replay').on('click.replay', e => {
                         e.stopPropagation(),
-                        this._hideShareModeSelector()
+                        this.exitSelectionMode()
                     })
                     ;
                 }
@@ -1375,7 +1364,7 @@
                     $('#reset-settings-btn').off('click.settings'),
                     $('#music-play-btn, #music-next-btn, #music-mode-btn').off('click.musicPlayer'),
                     $('#music-progress, #music-volume').off('input.musicPlayer change.musicPlayer'),
-                    $(document).off('click.settings click.musicPlayer click.replay click.replayShare'),
+                    $(document).off('click.settings click.musicPlayer click.replay'),
                     $('.background-color-btn').off('click.settings'),
 
                     $('.theme-btn').on('click.settings', e => {
@@ -1501,11 +1490,7 @@
                     }
                     ),
                     $(document).on('click.replay', e => {
-                        $('#share-mode-overlay').hasClass('active') || ($(e.target).closest('#replay-btn, #replay-panel').length || this.closeReplayPanel())
-                    }
-                    ),
-                    $('#share-mode-overlay').off('click.replayShare').on('click.replayShare', e => {
-                        e.target === e.currentTarget && this._hideShareModeSelector()
+                        $(e.target).closest('#replay-btn, #replay-panel').length || this.closeReplayPanel()
                     }
                     ),
                     $('#font-selector').off('change.settings').on('change.settings', e => {
@@ -2014,7 +1999,6 @@
                     this._replaySelectedIndices = new Set,
                     $('#replay-selection-bar').addClass('is-hidden'),
                     $('#replay-panel-share').removeClass('is-hidden'),
-                    this._hideShareModeSelector(),
                     this.syncModalState()
                 }
                 renderReplayContent() {
@@ -2076,12 +2060,6 @@
                     const e = this.uiController?._currentMemoir || [];
                     return Array.from(this._replaySelectedIndices).sort((e, t) => e - t).map(t => e[t]).filter(e => e)
                 }
-                _showShareModeSelector() {
-                    $('#share-mode-overlay').addClass('active')
-                }
-                _hideShareModeSelector() {
-                    $('#share-mode-overlay').removeClass('active')
-                }
                 async _loadHtml2Canvas() {
                     if (window.html2canvas)
                         return window.html2canvas;
@@ -2127,69 +2105,6 @@
                     document.body.removeChild(t),
                     this._downloadImage(s, '记忆回放_对话.png')
                 }
-                async _generateGameDialogueImage(e) {
-                    await this._loadHtml2Canvas();
-                    const t = await html2canvas(document.querySelector('#view-novel'), {
-                        backgroundColor: null,
-                        scale: 2,
-                        allowTaint: !0,
-                        useCORS: !0,
-                        onclone: function(a) {
-                            const n = a.querySelector('#view-novel');
-                            if (n) {
-                                n.style.aspectRatio = 'auto',
-                                n.style.maxHeight = 'none',
-                                n.style.borderRadius = '0';
-                                const s = a.querySelector('#content-area');
-                                if (s) {
-                                    const i = s.style;
-                                    n.style.backgroundImage = i.backgroundImage || '',
-                                    n.style.backgroundSize = i.backgroundSize || 'cover',
-                                    n.style.backgroundPosition = i.backgroundPosition || 'center center',
-                                    n.style.backgroundRepeat = i.backgroundRepeat || 'no-repeat',
-                                    n.style.backgroundColor = i.backgroundColor || ''
-                                }
-                            }
-                            ['.dialogue-box', '.dialogue-nav-buttons', '.top-header-container', '#replay-btn-container', '.cg-close-btn', '.nav-control-btn', '#player-choice-input', '.dialogue-controls', '.character-status-tooltip'].forEach(e => {
-                                const t = a.querySelector(e);
-                                t && t.remove()
-                            }
-                            )
-                        }
-                    });
-                    const a = document.createElement('div');
-                    a.style.cssText = `position:fixed;left:-9999px;top:0;width:${Math.round(t.width / 2)}px;background:var(--ui-bg-heavy,#1d1d1f);color:var(--text-color,#f5f5f7);padding:0;z-index:-1;font-family:sans-serif;border-radius:0 0 16px 16px;`,
-                    document.body.appendChild(a);
-                    const n = document.createElement('div');
-                    n.style.cssText = 'padding:20px 24px;',
-                    e.forEach(e => {
-                        const t = document.createElement('div');
-                        t.style.cssText = 'margin-bottom:14px;padding:10px 14px;background:var(--ui-bg,rgba(255,255,255,0.05));border-radius:10px;border:1px solid var(--ui-border-color,rgba(255,255,255,0.1));';
-                        const a = document.createElement('div');
-                        a.style.cssText = 'font-size:13px;font-weight:600;color:var(--primary-color,#0a84ff);margin-bottom:4px;',
-                        a.textContent = e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白';
-                        const s = document.createElement('div');
-                        s.style.cssText = 'font-size:14px;line-height:1.6;word-break:break-word;',
-                        s.textContent = e.text,
-                        t.appendChild(a),
-                        t.appendChild(s),
-                        n.appendChild(t)
-                    }
-                    ),
-                    a.appendChild(n);
-                    const s = await html2canvas(a, {
-                        backgroundColor: '#1d1d1f',
-                        scale: 2
-                    });
-                    document.body.removeChild(a);
-                    const i = document.createElement('canvas');
-                    i.width = Math.max(t.width, s.width),
-                    i.height = t.height + s.height;
-                    const o = i.getContext('2d');
-                    o.drawImage(t, (i.width - t.width) / 2, 0),
-                    o.drawImage(s, (i.width - s.width) / 2, t.height),
-                    this._downloadImage(i, '记忆回放_游戏界面+对话.png')
-                }
                 _downloadImage(e, t) {
                     e.toBlob(e => {
                         if (!e)
@@ -2228,12 +2143,10 @@
                     $('#replay-panel-close').off('.replay'),
                     $('#replay-panel-share').off('.replay'),
                     $('#replay-confirm-btn').off('.replay'),
+                    $('#replay-select-all-btn').off('.replay'),
                     $('#replay-cancel-btn').off('.replay'),
-                    $('#share-dialogue-only-btn').off('.replayShare'),
-                    $('#share-game-dialogue-btn').off('.replayShare'),
-                    $('#share-mode-cancel-btn').off('.replayShare'),
                     $('#replay-toggle').off('.settings'),
-                    $(document).off('.replay .replayShare'),
+                    $(document).off('.replay'),
                     this.closeReplayPanel(),
                     console.log('事件处理器已销毁')
                 }
@@ -4857,82 +4770,15 @@
             transition: color 0.2s ease;
         }
 
-        .share-mode-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 3000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-        }
-
-        .share-mode-overlay.active {
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .share-mode-dialog {
-            background: var(--ui-bg-heavy);
-            backdrop-filter: blur(var(--blur-intensity));
-            -webkit-backdrop-filter: blur(var(--blur-intensity));
-            border-radius: 16px;
-            padding: 24px;
-            border: 1px solid var(--ui-border-color);
-            box-shadow: 0 12px 48px var(--shadow-color-medium);
-            text-align: center;
-            max-width: 400px;
-            width: 90vw;
-        }
-
-        .share-mode-dialog h3 {
-            margin: 0 0 20px;
-            font-size: 18px;
-            color: var(--text-color);
-            font-weight: 600;
-        }
-
-        .share-mode-options {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-bottom: 16px;
-        }
-
-        .share-mode-btn {
-            padding: 12px 24px;
-            border: 1px solid var(--ui-border-color);
-            border-radius: 10px;
+        .replay-selection-btn.select-all {
             background: var(--ui-bg);
             color: var(--text-color);
-            font-size: 15px;
-            cursor: pointer;
-            transition: all 0.25s ease;
-            font-weight: 500;
+            border: 1px solid var(--ui-border-color);
         }
 
-        .share-mode-btn:hover {
+        .replay-selection-btn.select-all:hover {
+            background: rgba(255,255,255,0.1);
             border-color: var(--primary-color);
-            background: var(--primary-color-light);
-            transform: translateY(-1px);
-        }
-
-        .share-mode-cancel {
-            padding: 8px 20px;
-            border: none;
-            background: transparent;
-            color: var(--text-color);
-            opacity: 0.6;
-            cursor: pointer;
-            font-size: 13px;
-            transition: opacity 0.2s ease;
-        }
-
-        .share-mode-cancel:hover {
-            opacity: 1;
         }
 
         @media (max-width: 768px) {
@@ -5326,18 +5172,9 @@
                 <div class="replay-empty">暂无对话记录</div>
             </div>
             <div class="replay-selection-bar is-hidden" id="replay-selection-bar">
+                <button class="replay-selection-btn select-all" id="replay-select-all-btn">全选</button>
                 <button class="replay-selection-btn confirm" id="replay-confirm-btn">确认分享</button>
                 <button class="replay-selection-btn cancel" id="replay-cancel-btn">取消</button>
-            </div>
-        </div>
-        <div class="share-mode-overlay" id="share-mode-overlay">
-            <div class="share-mode-dialog">
-                <h3>选择分享方式</h3>
-                <div class="share-mode-options">
-                    <button class="share-mode-btn" id="share-dialogue-only-btn">仅分享对话</button>
-                    <button class="share-mode-btn" id="share-game-dialogue-btn">分享游戏界面+对话</button>
-                </div>
-                <button class="share-mode-cancel" id="share-mode-cancel-btn">取消</button>
             </div>
         </div>
     </div>
