@@ -1437,6 +1437,21 @@
                             }
                         }
                     }),
+                    $('#replay-scene-confirm-btn').off('click.replay').on('click.replay', async e => {
+                        e.stopPropagation();
+                        const t = this._getSelectedEntries();
+                        if (0 === t.length)
+                            o().warning('请至少选择一条对话进行附图导出');
+                        else {
+                            this.exitSelectionMode();
+                            try {
+                                await this._generateSceneWithDialogueImage(t)
+                            } catch (e) {
+                                console.error('生成附图导出失败:', e),
+                                o().error('附图导出失败，请重试')
+                            }
+                        }
+                    }),
                     $('#replay-select-all-btn').off('click.replay').on('click.replay', e => {
                         e.stopPropagation();
                         const t = this.uiController?._currentMemoir || [];
@@ -2280,6 +2295,124 @@
                     }
                     , 'image/png')
                 }
+                async _generateSceneWithDialogueImage(e) {
+                    await this._loadHtml2Canvas();
+                    const t = $('#view-novel')
+                      , a = t.find('.ui-layer')
+                      , n = t.find('.cg-layer');
+                    a.css('visibility', 'hidden'),
+                    n.css('visibility', 'hidden');
+                    const s = t[0].getBoundingClientRect()
+                      , i = s.width
+                      , o = s.height;
+                    let r;
+                    try {
+                        r = await html2canvas(t[0], {
+                            backgroundColor: null,
+                            scale: 2,
+                            width: i,
+                            height: o,
+                            useCORS: !0
+                        })
+                    } catch (t) {
+                        r = null
+                    }
+                    a.css('visibility', ''),
+                    n.css('visibility', '');
+                    if (!r)
+                        return void o().error('场景截图失败，请重试');
+                    const c = i * 2
+                      , l = o * 2
+                      , d = document.createElement('canvas')
+                      , h = d.getContext('2d');
+                    h.font = 'bold 13px sans-serif';
+                    const p = 26
+                      , u = 14
+                      , f = 40
+                      , m = 20
+                      , g = e.reduce((t, a) => {
+                        const n = a.speaker && a.speaker.trim() ? a.speaker.trim() : '旁白'
+                          , s = a.text || ''
+                          , i = function(e, t) {
+                            const a = []
+                              , n = e.length;
+                            let s = 0;
+                            for (let i = 0; i < n; ) {
+                                let o = ''
+                                  , r = 0;
+                                for (; i < n && h.measureText(o + e[i]).width <= t; )
+                                    o += e[i],
+                                    r += e[i].charCodeAt(0) > 127 ? 1 : 0,
+                                    i++;
+                                if (0 === o.length && i < n && (o = e[i],
+                                i++),
+                                o)
+                                    a.push(o)
+                            }
+                            return 0 === a.length ? [e] : a
+                        }(s, c - 80);
+                        const o = i.length * u + p + f;
+                        return t + o + m
+                    }, 0)
+                      , v = Math.max(c, 640);
+                    d.width = v,
+                    d.height = l + g + 30,
+                    h.fillStyle = '#1d1d1f',
+                    h.fillRect(0, 0, d.width, d.height),
+                    h.drawImage(r, Math.round((v - c) / 2), 0, c, l),
+                    h.font = 'bold 13px sans-serif',
+                    h.textBaseline = 'top',
+                    h.fillStyle = '#f5f5f7';
+                    let y = l + 15;
+                    e.forEach(e => {
+                        const t = e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白'
+                          , a = e.text || ''
+                          , n = function(e, t) {
+                            const a = []
+                              , n = e.length;
+                            let s = 0;
+                            for (let i = 0; i < n; ) {
+                                let o = ''
+                                  , r = 0;
+                                for (; i < n && h.measureText(o + e[i]).width <= t; )
+                                    o += e[i],
+                                    i++;
+                                if (0 === o.length && i < n && (o = e[i],
+                                i++),
+                                o)
+                                    a.push(o)
+                            }
+                            return 0 === a.length ? [e] : a
+                        }(a, v - 80);
+                        h.fillStyle = 'rgba(255,255,255,0.04)',
+                        h.fillRect(10, y, v - 20, p + n.length * u + f),
+                        h.fillStyle = '#0a84ff',
+                        h.fillText(t, 30, y + 8),
+                        h.font = '14px sans-serif',
+                        h.fillStyle = '#f5f5f7',
+                        n.forEach((e, t) => {
+                            h.fillText(e, 30, y + p + t * u)
+                        }
+                        ),
+                        y += p + n.length * u + f + m,
+                        h.font = 'bold 13px sans-serif'
+                    }
+                    );
+                    const b = d;
+                    b.toBlob(e => {
+                        if (!e)
+                            return;
+                        const t = URL.createObjectURL(e)
+                          , a = document.createElement('a');
+                        a.href = t,
+                        a.download = '记忆回放_附图_' + Date.now() + '.png',
+                        document.body.appendChild(a),
+                        a.click(),
+                        document.body.removeChild(a),
+                        URL.revokeObjectURL(t)
+                    }
+                    , 'image/png')
+                }
                 applyBackgroundColorChoice(e) {
                    backgroundColorManager.saveKey(e),
                    backgroundColorManager.applyKey(e),
@@ -2303,6 +2436,7 @@
                     $('#replay-panel-close').off('.replay'),
                     $('#replay-panel-share').off('.replay'),
                     $('#replay-confirm-btn').off('.replay'),
+                    $('#replay-scene-confirm-btn').off('.replay'),
                     $('#replay-select-all-btn').off('.replay'),
                     $('#replay-cancel-btn').off('.replay'),
                     $('#replay-toggle').off('.settings'),
@@ -5492,7 +5626,8 @@
             </div>
             <div class="replay-selection-bar is-hidden" id="replay-selection-bar">
                 <button class="replay-selection-btn select-all" id="replay-select-all-btn">全选</button>
-                <button class="replay-selection-btn confirm" id="replay-confirm-btn">确认分享</button>
+                <button class="replay-selection-btn confirm" id="replay-confirm-btn">对话导出</button>
+                <button class="replay-selection-btn confirm" id="replay-scene-confirm-btn" style="background:var(--primary-color,#0a84ff);color:#fff">附图导出</button>
                 <button class="replay-selection-btn cancel" id="replay-cancel-btn">取消</button>
             </div>
         </div>
