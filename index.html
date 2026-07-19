@@ -125,6 +125,7 @@
                         localStorage.setItem('iswp_brightness_max', String(this.maxOverlayOpacity))
                     } catch (e) {}
                 }
+                analyzeError = null;
                 async analyzeBrightness(e) {
                     if (this.cache.has(e))
                         return this.cache.get(e);
@@ -151,9 +152,11 @@
                         }
                         const i = n / s;
                         return this.cache.set(e, i),
+                        this.analyzeError = null,
                         i
                     } catch (t) {
-                        return console.warn('背景亮度分析失败:', t),
+                        return this.analyzeError = t.message || String(t),
+                        console.warn('背景亮度分析失败:', t),
                         128
                     }
                 }
@@ -200,7 +203,8 @@
                     $('#brightness-auto-section').show(),
                     $('#brightness-threshold-slider').val(this.autoThreshold),
                     $('#brightness-threshold-value').text(this.autoThreshold),
-                    $('#brightness-luminance-value').text(null !== this.currentLuminance ? Math.round(this.currentLuminance) : '--'))
+                    $('#brightness-luminance-value').text(null !== this.currentLuminance ? Math.round(this.currentLuminance) : '--'),
+                    this.analyzeError ? $('#brightness-luminance-error').text('⚠ ' + this.analyzeError).show() : $('#brightness-luminance-error').hide())
                 }
             }
             class l {
@@ -5461,6 +5465,7 @@
                 </div>
                 <div style="margin-top:10px;font-size:12px;color:var(--text-color-secondary,#aaa)">
                     当前背景亮度：<span id="brightness-luminance-value" style="color:var(--text-color)">--</span>
+                    <span id="brightness-luminance-error" style="display:none;color:#ff6b6b;margin-left:8px"></span>
                 </div>
             </div>
         </div>
