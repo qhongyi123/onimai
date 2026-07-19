@@ -2404,37 +2404,6 @@
                         T += e.blockHeight
                     }
                     );
-                    c.height = r + x,
-                    l.fillStyle = '#1d1d1f',
-                    l.fillRect(0, 0, c.width, c.height),
-                    u && l.drawImage(u, 0, 0, i, r),
-                    l.save(),
-                    l.beginPath(),
-                    l.rect(0, 0, i, r),
-                    l.clip(),
-                    g.forEach(e => {
-                        'fulfilled' === e.status && e.value && l.drawImage(e.value.img, e.value.x, e.value.y, e.value.w, e.value.h)
-                    }
-                    ),
-                    l.restore(),
-                    l.fillStyle = '#1d1d1f',
-                    l.fillRect(0, r, c.width, x);
-                    let T = r + 20;
-                    C.forEach(e => {
-                        l.fillStyle = 'rgba(255,255,255,0.04)',
-                        l.fillRect(10, T, c.width - 20, e.blockHeight),
-                        l.fillStyle = '#0a84ff',
-                        l.font = 'bold 156px sans-serif',
-                        l.fillText(e.speaker, 60, T + 150),
-                        l.font = '210px sans-serif',
-                        l.fillStyle = '#f5f5f7',
-                        e.lines.forEach((t, a) => {
-                            l.fillText(t, 60, T + v + a * y)
-                        }
-                        ),
-                        T += e.blockHeight
-                    }
-                    );
                     try {
                         c.toBlob(e => {
                             if (!e)
