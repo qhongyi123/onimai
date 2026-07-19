@@ -2322,12 +2322,12 @@
                           , l = e.backgroundUrl || null;
                         s.length > 0 && (l && r && l !== r || s.length > 0 && c && i.has(c) && s[s.length - 1].characterName !== c || i.size >= 4 && c && !i.has(c)) ? (n.push({
                             backgroundUrl: r,
-                            entries: s,
+                            entries: s.slice(),
                             characters: new Map(s.filter(e => e.characterName && e.spriteUrl).map(e => [e.characterName, e.spriteUrl]))
                         }),
-                        s = [],
+                        s.length = 0,
                         i.clear(),
-                        r = (s[s.length - 1] || e).backgroundUrl || r) : void 0,
+                        r = e.backgroundUrl || r) : void 0,
                         l && (r = l),
                         c && i.add(c),
                         s.push({
@@ -2500,12 +2500,12 @@
                           , l = e.backgroundUrl || null;
                         s.length > 0 && (l && r && l !== r || s.length > 0 && c && i.has(c) && s[s.length - 1].characterName !== c || i.size >= 4 && c && !i.has(c)) ? (n.push({
                             backgroundUrl: r,
-                            entries: s,
+                            entries: s.slice(),
                             characters: new Map(s.filter(e => e.characterName && e.spriteUrl).map(e => [e.characterName, e.spriteUrl]))
                         }),
-                        s = [],
+                        s.length = 0,
                         i.clear(),
-                        r = (s[s.length - 1] || e).backgroundUrl || r) : void 0,
+                        r = e.backgroundUrl || r) : void 0,
                         l && (r = l),
                         c && i.add(c),
                         s.push({
