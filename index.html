@@ -167,15 +167,15 @@
                         this.currentLuminance = a,
                         a > this.autoThreshold && (t = Math.min((a - this.autoThreshold) / (255 - this.autoThreshold) * this.maxOverlayOpacity, this.maxOverlayOpacity))
                     }
-                    document.documentElement.style.setProperty('--bg-overlay-opacity', t.toFixed(3));
-                    const n = document.getElementById('bg-brightness-overlay');
-                    n && (n.style.backgroundColor = `rgba(0, 0, 0, ${t.toFixed(3)})`),
+                    const n = t.toFixed(3)
+                      , s = t > 0 ? `inset 0 0 0 9999px rgba(0, 0, 0, ${n}), 0 30px 80px rgba(0,0,0,0.55)` : '0 30px 80px rgba(0,0,0,0.55)';
+                    $('#view-novel').css('box-shadow', s),
                     this.updateUI()
                 }
                 setMode(e) {
                     this.mode = e,
                     this.saveSettings(),
-                    this.updateUI()
+                    this.currentBackground ? this.applyToBackground(this.currentBackground) : this.updateUI()
                 }
                 setManualLevel(e) {
                     this.manualLevel = Math.max(0, Math.min(1, e)),
