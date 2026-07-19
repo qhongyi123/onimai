@@ -840,8 +840,9 @@
                     console.log('🔗 背景URL:', t);
                     const a = $('#content-area')
                       , n = $('#background-overlay');
-                    if (!this.currentBackground)
-                        return console.log('🎬 设置初始背景'),
+                    if (!this.currentBackground) {
+                        console.log('🎬 设置初始背景');
+                        await window.brightnessManager?.applyToBackground(t);
                         a.css({
                             'background-image': `url(${t})`,
                             'background-size': 'cover',
@@ -850,8 +851,9 @@
                             'background-color': 'var(--stage-fallback-bg, #101828)'
                         }),
                         this.currentBackground = t,
-                        window.brightnessManager?.applyToBackground(t),
-                        void console.log('✅ 初始背景已设置');
+                        console.log('✅ 初始背景已设置');
+                        return
+                    }
                     if (this.currentBackground !== t) {
                         console.log('🎭 开始背景淡入淡出切换');
                         try {
@@ -866,11 +868,11 @@
                                 'background-repeat': 'no-repeat',
                                 'background-color': 'var(--stage-fallback-bg, #101828)'
                             }),
+                            await window.brightnessManager?.applyToBackground(t),
                             await this.sleep(50),
                             n.css('opacity', '0'),
                             await this.sleep(500),
                             this.currentBackground = t,
-                            window.brightnessManager?.applyToBackground(t),
                             console.log('✅ 背景切换完成')
                         } catch (e) {
                             console.error('❌ 背景切换失败:', e),
@@ -881,9 +883,9 @@
                                'background-repeat': 'no-repeat',
                                'background-color': 'var(--stage-fallback-bg, #101828)'
                            }),
+                            window.brightnessManager?.applyToBackground(t),
                             n.css('opacity', '0'),
-                            this.currentBackground = t,
-                            window.brightnessManager?.applyToBackground(t)
+                            this.currentBackground = t
                         }
                     } else
                         console.log('🔄 背景相同，跳过切换')
