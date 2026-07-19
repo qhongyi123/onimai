@@ -718,13 +718,23 @@
                             t && await this.executeCommand(t)
                         }
                         try {
-                            const e = this.dialogueHistory.filter(t => 'dialogue' === t.type && t.text && t.text.trim()).map(t => ({
-                                speaker: t.speaker,
-                                text: t.text,
-                                backgroundUrl: t.backgroundUrl || null,
-                                characterName: t.characterName || null,
-                                spriteUrl: t.spriteUrl || null
-                            }));
+                            const e = [];
+                            for (const t of s) {
+                                if (t.startsWith('[') && t.endsWith(']'))
+                                    continue;
+                                const a = t.split('|');
+                                if (a.length < 3)
+                                    continue;
+                                const n = (a[0] || '').trim();
+                                let s = a.slice(2).join('|').trim();
+                                if (s = s.replace(/\s*\[action\|[^|]+\|[^|\]]+\]\s*/g, '').trim(),
+                                !s)
+                                    continue;
+                                e.push({
+                                    speaker: n,
+                                    text: s
+                                })
+                            }
                             this.uiController.setCurrentMemoir(e)
                         } catch (e) {
                             console.warn('构建回忆录失败（已忽略）：', e)
@@ -1453,21 +1463,6 @@
                             $(`.replay-entry[data-replay-index="${t}"]`).toggleClass('selected', !a)
                         }
                         )
-                    }),
-                    $('#replay-long-confirm-btn').off('click.replay').on('click.replay', async e => {
-                        e.stopPropagation();
-                        const t = this._getSelectedEntries();
-                        if (0 === t.length)
-                            o().warning('请至少选择一条对话进行长图导出');
-                        else {
-                            this.exitSelectionMode();
-                            try {
-                                await this._generateSceneLongImage(t)
-                            } catch (e) {
-                                console.error('生成长图导出失败:', e),
-                                o().error('长图导出失败，请重试')
-                            }
-                        }
                     }),
                     $('#replay-cancel-btn').off('click.replay').on('click.replay', e => {
                         e.stopPropagation(),
@@ -2301,364 +2296,120 @@
                     , 'image/png')
                 }
                 async _generateSceneWithDialogueImage(e) {
-                    const t = e => e.replace('qianyedoufu.dpdns.org', 'pub-a4bd6db4d58146baae34ef804cf68ff0.r2.dev')
-                      , a = e => new Promise((t, a) => {
+                    const t = document.getElementById('view-novel');
+                    if (!t)
+                        return void o().error('场景元素未找到');
+                    const a = t.getBoundingClientRect()
+                      , n = a.width
+                      , s = a.height
+                      , i = n * 2
+                      , r = s * 2
+                      , c = document.createElement('canvas')
+                      , l = c.getContext('2d');
+                    c.width = Math.max(i, 640);
+                    const d = window.brightnessManager?.currentBackground || this.llmrpParser?.currentBackground || '';
+                    const h = d ? d.replace('qianyedoufu.dpdns.org', 'pub-a4bd6db4d58146baae34ef804cf68ff0.r2.dev') : '';
+                    const p = e => new Promise((t, a) => {
                         const n = new Image;
                         n.crossOrigin = 'anonymous',
                         n.onload = () => t(n),
                         n.onerror = a,
                         n.src = e
                     }
-                    )
-                      , n = []
-                      , s = []
-                      , i = new Set;
-                    let r = null;
-                    const c = e.filter(e => e.text && e.text.trim());
-                    if (0 === c.length)
-                        return void o().warning('没有可导出的对话');
-                    c.forEach((e, o) => {
-                        const c = e.characterName || null
-                          , l = e.backgroundUrl || null;
-                        s.length > 0 && (l && r && l !== r || s.length > 0 && c && i.has(c) && s[s.length - 1].characterName !== c || i.size >= 4 && c && !i.has(c)) ? (n.push({
-                            backgroundUrl: r,
-                            entries: s.slice(),
-                            characters: new Map(s.filter(e => e.characterName && e.spriteUrl).map(e => [e.characterName, e.spriteUrl]))
-                        }),
-                        s.length = 0,
-                        i.clear(),
-                        r = e.backgroundUrl || r) : void 0,
-                        l && (r = l),
-                        c && i.add(c),
-                        s.push({
-                            speaker: e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白',
-                            text: e.text,
-                            characterName: c,
-                            spriteUrl: e.spriteUrl || null
-                        })
-                    }
                     );
-                    s.length > 0 && n.push({
-                        backgroundUrl: r,
-                        entries: s,
-                        characters: new Map(s.filter(e => e.characterName && e.spriteUrl).map(e => [e.characterName, e.spriteUrl]))
-                    });
-                    const l = e.find(e => e.backgroundUrl)?.backgroundUrl || this.llmrpParser?.currentBackground || '';
-                    n.forEach(e => {
-                        e.backgroundUrl || (e.backgroundUrl = l)
-                    }
-                    );
-                    const d = document.getElementById('view-novel');
-                    let h, p;
-                    if (d) {
-                        const e = d.getBoundingClientRect();
-                        h = e.width * 2,
-                        p = e.height * 2
-                    } else
-                        h = 1200,
-                        p = 675;
-                    const u = 240
-                      , f = 240
-                      , m = 40;
-                    for (let g = 0; g < n.length; g++) {
-                        const v = n[g]
-                          , y = v.backgroundUrl ? t(v.backgroundUrl) : ''
-                          , b = [];
-                        let w = null;
-                        y && b.push(a(y).then(e => {
-                            w = e
-                        }
-                        ).catch(()=>{}
-                        ));
-                        const C = [];
-                        v.characters.forEach((e, a) => {
-                            e && !C.some(t => t.url === e) && (C.push({
-                                url: e,
-                                r2Url: t(e),
-                                name: a
-                            }),
-                            b.push(t(e).then(t => ({
-                                img: t,
-                                name: a
-                            })).catch(()=>{}
-                            )))
-                        }
-                        );
-                        const x = await Promise.allSettled(b)
-                          , z = x.filter(e => 'fulfilled' === e.status && e.value).map(e => e.value);
-                        const I = document.createElement('canvas')
-                          , A = I.getContext('2d');
-                        I.width = Math.max(h, 640),
-                        A.font = 'bold 156px sans-serif';
-                        const k = [];
-                        v.entries.forEach(e => {
-                            const t = function(e, t) {
-                                const a = [];
-                                let n = '';
-                                for (let s = 0; s < e.length; s++) {
-                                    const i = e[s];
-                                    t.measureText(n + i).width > I.width - 300 && n.length > 0 ? (a.push(n),
-                                    n = i) : n += i
-                                }
-                                return n.length > 0 && a.push(n),
-                                0 === a.length ? [e] : a
-                            }(e.text, A)
-                              , a = k.length - 1;
-                            a >= 0 && k[a].speaker === e.speaker ? (k[a].lines.push(...t),
-                            k[a].lineCount += t.length) : k.push({
-                                speaker: e.speaker,
-                                lines: t,
-                                lineCount: t.length
-                            })
-                        }
-                        );
-                        const S = k.map(e => ({
-                            ...e,
-                            blockHeight: u + e.lineCount * f + m
-                        }))
-                          , E = S.reduce((e, t) => e + t.blockHeight, 0) + 10;
-                        I.height = p + E,
-                        A.fillStyle = '#1d1d1f',
-                        A.fillRect(0, 0, I.width, I.height),
-                        w && A.drawImage(w, 0, 0, h, p);
-                        const D = z.filter(e => e.name);
-                        if (D.length > 0) {
-                            A.save(),
-                            A.beginPath(),
-                            A.rect(0, 0, h, p),
-                            A.clip();
-                            const e = h / (D.length + 1)
-                              , t = p / 2;
-                            D.forEach((a, n) => {
-                                const s = a.img;
-                                if (!s)
-                                    return;
-                                const i = s.width / s.height
-                                  , r = t / i;
-                                A.drawImage(s, Math.round((n + 1) * e - r / 2), Math.round(p - t), Math.round(r), Math.round(t))
-                            }
-                            ),
-                            A.restore()
-                        }
-                        A.fillStyle = '#1d1d1f',
-                        A.fillRect(0, p, I.width, E);
-                        let B = p + 20;
-                        S.forEach(e => {
-                            A.fillStyle = 'rgba(255,255,255,0.04)',
-                            A.fillRect(10, B, I.width - 20, e.blockHeight),
-                            A.fillStyle = '#0a84ff',
-                            A.font = 'bold 156px sans-serif',
-                            A.fillText(e.speaker, 60, B + 150),
-                            A.font = '210px sans-serif',
-                            A.fillStyle = '#f5f5f7',
-                            e.lines.forEach((t, a) => {
-                                A.fillText(t, 60, B + u + a * f)
-                            }
-                            ),
-                            B += e.blockHeight
-                        }
-                        );
-                        const F = I;
+                    let u = null;
+                    if (h)
                         try {
-                            F.toBlob(e => {
-                                if (!e)
-                                    return;
-                                const t = URL.createObjectURL(e)
-                                  , a = document.createElement('a');
-                                a.href = t,
-                                a.download = '记忆回放_附图_' + (g + 1) + '_' + Date.now() + '.png',
-                                document.body.appendChild(a),
-                                a.click(),
-                                document.body.removeChild(a),
-                                URL.revokeObjectURL(t)
+                            u = await p(h)
+                        } catch (e) {}
+                    const f = t.querySelectorAll('.character-sprite.dynamic');
+                    const m = [];
+                    f.forEach(e => {
+                        const t = e.src.replace('qianyedoufu.dpdns.org', 'pub-a4bd6db4d58146baae34ef804cf68ff0.r2.dev')
+                          , n = e.getBoundingClientRect();
+                        m.push(p(t).then(t => ({
+                            img: t,
+                            x: (n.left - a.left) * 2,
+                            y: (n.top - a.top) * 2,
+                            w: n.width * 2,
+                            h: n.height * 2
+                        })))
+                    }
+                    );
+                    const g = await Promise.allSettled(m);
+                    l.font = 'bold 156px sans-serif';
+                    const v = 390
+                      , y = 270
+                      , b = 300
+                      , w = 450;
+                    const k = [];
+                    e.forEach(e => {
+                        const t = e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白'
+                          , a = e.text || ''
+                          , n = function(e, t) {
+                            const a = [];
+                            let n = '';
+                            for (let s = 0; s < e.length; s++) {
+                                const i = e[s];
+                                t.measureText(n + i).width > c.width - 300 && n.length > 0 ? (a.push(n),
+                                n = i) : n += i
                             }
-                            , 'image/png')
-                        } catch (e) {
-                            o().error('第' + (g + 1) + '张导出失败')
-                        }
-                    }
-                }
-                async _generateSceneLongImage(e) {
-                    const t = e => e.replace('qianyedoufu.dpdns.org', 'pub-a4bd6db4d58146baae34ef804cf68ff0.r2.dev')
-                      , a = e => new Promise((t, a) => {
-                        const n = new Image;
-                        n.crossOrigin = 'anonymous',
-                        n.onload = () => t(n),
-                        n.onerror = a,
-                        n.src = e
-                    }
-                    )
-                      , n = []
-                      , s = []
-                      , i = new Set;
-                    let r = null;
-                    const c = e.filter(e => e.text && e.text.trim());
-                    if (0 === c.length)
-                        return void o().warning('没有可导出的对话');
-                    c.forEach((e, o) => {
-                        const c = e.characterName || null
-                          , l = e.backgroundUrl || null;
-                        s.length > 0 && (l && r && l !== r || s.length > 0 && c && i.has(c) && s[s.length - 1].characterName !== c || i.size >= 4 && c && !i.has(c)) ? (n.push({
-                            backgroundUrl: r,
-                            entries: s.slice(),
-                            characters: new Map(s.filter(e => e.characterName && e.spriteUrl).map(e => [e.characterName, e.spriteUrl]))
-                        }),
-                        s.length = 0,
-                        i.clear(),
-                        r = e.backgroundUrl || r) : void 0,
-                        l && (r = l),
-                        c && i.add(c),
-                        s.push({
-                            speaker: e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白',
-                            text: e.text,
-                            characterName: c,
-                            spriteUrl: e.spriteUrl || null
+                            return n.length > 0 && a.push(n),
+                            0 === a.length ? [e] : a
+                        }(a, l);
+                        const s = k.length - 1;
+                        s >= 0 && k[s].speaker === t ? (k[s].lines.push(...n),
+                        k[s].lineCount += n.length) : k.push({
+                            speaker: t,
+                            lines: n,
+                            lineCount: n.length
                         })
                     }
                     );
-                    s.length > 0 && n.push({
-                        backgroundUrl: r,
-                        entries: s,
-                        characters: new Map(s.filter(e => e.characterName && e.spriteUrl).map(e => [e.characterName, e.spriteUrl]))
-                    });
-                    const l = e.find(e => e.backgroundUrl)?.backgroundUrl || this.llmrpParser?.currentBackground || '';
-                    n.forEach(e => {
-                        e.backgroundUrl || (e.backgroundUrl = l)
-                    }
-                    );
-                    const d = document.getElementById('view-novel');
-                    let h, p;
-                    if (d) {
-                        const e = d.getBoundingClientRect();
-                        h = e.width * 2,
-                        p = e.height * 2
-                    } else
-                        h = 1200,
-                        p = 675;
-                    const u = 240
-                      , f = 240
-                      , m = 40;
-                    const g = [];
-                    for (let v = 0; v < n.length; v++) {
-                        const y = n[v]
-                          , b = y.backgroundUrl ? t(y.backgroundUrl) : ''
-                          , w = [];
-                        let C = null;
-                        b && w.push(a(b).then(e => {
-                            C = e
-                        }
-                        ).catch(()=>{}
-                        ));
-                        y.characters.forEach((e, a) => {
-                            e && !w.some(t => t._url === e) && (w.push(a(t(e)).then(t => ({
-                                img: t,
-                                name: a,
-                                _url: e
-                            })).catch(()=>{}
-                            )))
-                        }
-                        );
-                        const x = await Promise.allSettled(w)
-                          , T = x.filter(e => 'fulfilled' === e.status && e.value).map(e => e.value)
-                          , k = T.filter(e => e.name);
-                        const S = document.createElement('canvas').getContext('2d');
-                        S.font = 'bold 156px sans-serif';
-                        const E = [];
-                        y.entries.forEach(e => {
-                            const t = function(e, t) {
-                                const a = [];
-                                let n = '';
-                                for (let s = 0; s < e.length; s++) {
-                                    const i = e[s];
-                                    t.measureText(n + i).width > h - 300 && n.length > 0 ? (a.push(n),
-                                    n = i) : n += i
-                                }
-                                return n.length > 0 && a.push(n),
-                                0 === a.length ? [e] : a
-                            }(e.text, S)
-                              , a = E.length - 1;
-                            a >= 0 && E[a].speaker === e.speaker ? (E[a].lines.push(...t),
-                            E[a].lineCount += t.length) : E.push({
-                                speaker: e.speaker,
-                                lines: t,
-                                lineCount: t.length
-                            })
-                        }
-                        );
-                        const I = E.map(e => ({
-                            ...e,
-                            blockHeight: u + e.lineCount * f + m
-                        }))
-                          , A = I.reduce((e, t) => e + t.blockHeight, 0) + 10;
-                        g.push({
-                            canvasHeight: p + A,
-                            background: C,
-                            sprites: k,
-                            dialogueBlocks: I,
-                            sceneHeight: p,
-                            sceneWidth: h
-                        })
-                    }
-                    const v = Math.max(h, 640)
-                      , y = g.reduce((e, t) => e + t.canvasHeight, 0)
-                      , b = document.createElement('canvas')
-                      , w = b.getContext('2d');
-                    b.width = v,
-                    b.height = y,
-                    w.fillStyle = '#1d1d1f',
-                    w.fillRect(0, 0, b.width, b.height);
-                    let C = 0;
+                    const C = k.map(e => ({
+                        ...e,
+                        blockHeight: v + e.lineCount * y + b + w
+                    }))
+                      , x = C.reduce((e, t) => e + t.blockHeight, 0) + 10;
+                    c.height = r + x,
+                    l.fillStyle = '#1d1d1f',
+                    l.fillRect(0, 0, c.width, c.height),
+                    u && l.drawImage(u, 0, 0, i, r),
+                    l.save(),
+                    l.beginPath(),
+                    l.rect(0, 0, i, r),
+                    l.clip(),
                     g.forEach(e => {
-                        const t = e.sceneHeight
-                          , a = e.sceneWidth;
-                        e.background && w.drawImage(e.background, 0, C, a, t);
-                        if (e.sprites.length > 0) {
-                            w.save(),
-                            w.beginPath(),
-                            w.rect(0, C, a, t),
-                            w.clip();
-                            const n = a / (e.sprites.length + 1)
-                              , s = t / 2;
-                            e.sprites.forEach((e, i) => {
-                                const r = e.img;
-                                if (!r)
-                                    return;
-                                const c = r.width / r.height
-                                  , l = s / c;
-                                w.drawImage(r, Math.round((i + 1) * n - l / 2), Math.round(C + t - s), Math.round(l), Math.round(s))
-                            }
-                            ),
-                            w.restore()
-                        }
-                        w.fillStyle = '#1d1d1f',
-                        w.fillRect(0, C + t, b.width, e.canvasHeight - t);
-                        let n = C + t + 20;
-                        e.dialogueBlocks.forEach(e => {
-                            w.fillStyle = 'rgba(255,255,255,0.04)',
-                            w.fillRect(10, n, b.width - 20, e.blockHeight),
-                            w.fillStyle = '#0a84ff',
-                            w.font = 'bold 156px sans-serif',
-                            w.fillText(e.speaker, 60, n + 150),
-                            w.font = '210px sans-serif',
-                            w.fillStyle = '#f5f5f7',
-                            e.lines.forEach((t, a) => {
-                                w.fillText(t, 60, n + u + a * f)
-                            }
-                            ),
-                            n += e.blockHeight
+                        'fulfilled' === e.status && e.value && l.drawImage(e.value.img, e.value.x, e.value.y, e.value.w, e.value.h)
+                    }
+                    ),
+                    l.restore(),
+                    l.fillStyle = '#1d1d1f',
+                    l.fillRect(0, r, c.width, x);
+                    let T = r + 20;
+                    C.forEach(e => {
+                        l.fillStyle = 'rgba(255,255,255,0.04)',
+                        l.fillRect(10, T, c.width - 20, e.blockHeight),
+                        l.fillStyle = '#0a84ff',
+                        l.font = 'bold 156px sans-serif',
+                        l.fillText(e.speaker, 60, T + 150),
+                        l.font = '210px sans-serif',
+                        l.fillStyle = '#f5f5f7',
+                        e.lines.forEach((t, a) => {
+                            l.fillText(t, 60, T + v + a * y)
                         }
                         ),
-                        C += e.canvasHeight
+                        T += e.blockHeight
                     }
                     );
                     try {
-                        b.toBlob(e => {
+                        c.toBlob(e => {
                             if (!e)
                                 return;
                             const t = URL.createObjectURL(e)
                               , a = document.createElement('a');
                             a.href = t,
-                            a.download = '记忆回放_长图_' + Date.now() + '.png',
+                            a.download = '记忆回放_附图_' + Date.now() + '.png',
                             document.body.appendChild(a),
                             a.click(),
                             document.body.removeChild(a),
@@ -2666,7 +2417,7 @@
                         }
                         , 'image/png')
                     } catch (e) {
-                        o().error('长图导出失败，请重试')
+                        o().error('导出失败，请重试')
                     }
                 }
                 applyBackgroundColorChoice(e) {
@@ -2693,7 +2444,6 @@
                     $('#replay-panel-share').off('.replay'),
                     $('#replay-confirm-btn').off('.replay'),
                     $('#replay-scene-confirm-btn').off('.replay'),
-                    $('#replay-long-confirm-btn').off('.replay'),
                     $('#replay-select-all-btn').off('.replay'),
                     $('#replay-cancel-btn').off('.replay'),
                     $('#replay-toggle').off('.settings'),
@@ -5885,7 +5635,6 @@
                 <button class="replay-selection-btn select-all" id="replay-select-all-btn">全选</button>
                 <button class="replay-selection-btn confirm" id="replay-confirm-btn">对话导出</button>
                 <button class="replay-selection-btn confirm" id="replay-scene-confirm-btn" style="background:var(--primary-color,#0a84ff);color:#fff">附图导出</button>
-                <button class="replay-selection-btn confirm" id="replay-long-confirm-btn" style="background:var(--primary-color,#0a84ff);color:#fff">长图导出</button>
                 <button class="replay-selection-btn cancel" id="replay-cancel-btn">取消</button>
             </div>
         </div>
