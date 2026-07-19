@@ -2337,26 +2337,28 @@
                     }
                     );
                     const g = await Promise.allSettled(m);
-                    l.font = 'bold 156px sans-serif';
-                    const v = 390
-                      , y = 270
-                      , b = 300
-                      , w = 450;
+                    const S = c.width;
+                    l.font = '210px sans-serif';
+                    const v = 200
+                      , y = 280
+                      , b = 60
+                      , w = 20;
+                    const wrap = function(e) {
+                        const t = [];
+                        let a = '';
+                        for (let n = 0; n < e.length; n++) {
+                            const i = e[n];
+                            l.measureText(a + i).width > S - 120 && a.length > 0 ? (t.push(a),
+                            a = i) : a += i
+                        }
+                        return a.length > 0 && t.push(a),
+                        0 === t.length ? [e] : t
+                    };
                     const k = [];
                     e.forEach(e => {
                         const t = e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白'
                           , a = e.text || ''
-                          , n = function(e, t) {
-                            const a = [];
-                            let n = '';
-                            for (let s = 0; s < e.length; s++) {
-                                const i = e[s];
-                                t.measureText(n + i).width > c.width - 300 && n.length > 0 ? (a.push(n),
-                                n = i) : n += i
-                            }
-                            return n.length > 0 && a.push(n),
-                            0 === a.length ? [e] : a
-                        }(a, l);
+                          , n = wrap(a);
                         const s = k.length - 1;
                         s >= 0 && k[s].speaker === t ? (k[s].lines.push(...n),
                         k[s].lineCount += n.length) : k.push({
@@ -2371,6 +2373,37 @@
                         blockHeight: v + e.lineCount * y + b + w
                     }))
                       , x = C.reduce((e, t) => e + t.blockHeight, 0) + 10;
+                    c.height = r + x,
+                    l.fillStyle = '#1d1d1f',
+                    l.fillRect(0, 0, c.width, c.height),
+                    u && l.drawImage(u, 0, 0, i, r),
+                    l.save(),
+                    l.beginPath(),
+                    l.rect(0, 0, i, r),
+                    l.clip(),
+                    g.forEach(e => {
+                        'fulfilled' === e.status && e.value && l.drawImage(e.value.img, e.value.x, e.value.y, e.value.w, e.value.h)
+                    }
+                    ),
+                    l.restore(),
+                    l.fillStyle = '#1d1d1f',
+                    l.fillRect(0, r, c.width, x);
+                    let T = r + 10;
+                    C.forEach(e => {
+                        l.fillStyle = 'rgba(255,255,255,0.04)',
+                        l.fillRect(10, T, c.width - 20, e.blockHeight),
+                        l.fillStyle = '#0a84ff',
+                        l.font = 'bold 156px sans-serif',
+                        l.fillText(e.speaker, 60, T + 150),
+                        l.font = '210px sans-serif',
+                        l.fillStyle = '#f5f5f7',
+                        e.lines.forEach((t, a) => {
+                            l.fillText(t, 60, T + v + a * y)
+                        }
+                        ),
+                        T += e.blockHeight
+                    }
+                    );
                     c.height = r + x,
                     l.fillStyle = '#1d1d1f',
                     l.fillRect(0, 0, c.width, c.height),
