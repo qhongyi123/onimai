@@ -129,14 +129,14 @@
                 async analyzeBrightness(e) {
                     if (this.cache.has(e))
                         return this.cache.get(e);
-                    const s = e.replace('qianyedoufu.dpdns.org', 'pub-a4bd6db4d58146baae34ef804cf68ff0.r2.dev');
+                    const o = e.replace('qianyedoufu.dpdns.org', 'pub-a4bd6db4d58146baae34ef804cf68ff0.r2.dev');
                     try {
                         const t = new Image;
                         t.crossOrigin = 'anonymous';
                         await new Promise((a, n) => {
                             t.onload = a,
                             t.onerror = n,
-                            t.src = s,
+                            t.src = o,
                             setTimeout(() => n(new Error('timeout')), 8e3)
                         }
                         ),
