@@ -2296,122 +2296,117 @@
                     , 'image/png')
                 }
                 async _generateSceneWithDialogueImage(e) {
-                    await this._loadHtml2Canvas();
-                    const t = $('#view-novel')
-                      , a = t.find('.ui-layer')
-                      , n = t.find('.cg-layer');
-                    a.css('visibility', 'hidden'),
-                    n.css('visibility', 'hidden');
-                    const s = t[0].getBoundingClientRect()
-                      , i = s.width
-                      , o = s.height;
-                    let r;
-                    try {
-                        r = await html2canvas(t[0], {
-                            backgroundColor: null,
-                            scale: 2,
-                            width: i,
-                            height: o,
-                            useCORS: !0
-                        })
-                    } catch (t) {
-                        r = null
-                    }
-                    a.css('visibility', ''),
-                    n.css('visibility', '');
-                    if (!r)
-                        return void o().error('场景截图失败，请重试');
-                    const c = i * 2
-                      , l = o * 2
-                      , d = document.createElement('canvas')
-                      , h = d.getContext('2d');
-                    h.font = 'bold 13px sans-serif';
-                    const p = 26
-                      , u = 14
-                      , f = 40
-                      , m = 20
-                      , g = e.reduce((t, a) => {
-                        const n = a.speaker && a.speaker.trim() ? a.speaker.trim() : '旁白'
-                          , s = a.text || ''
-                          , i = function(e, t) {
-                            const a = []
-                              , n = e.length;
-                            let s = 0;
-                            for (let i = 0; i < n; ) {
-                                let o = ''
-                                  , r = 0;
-                                for (; i < n && h.measureText(o + e[i]).width <= t; )
-                                    o += e[i],
-                                    r += e[i].charCodeAt(0) > 127 ? 1 : 0,
-                                    i++;
-                                if (0 === o.length && i < n && (o = e[i],
-                                i++),
-                                o)
-                                    a.push(o)
-                            }
-                            return 0 === a.length ? [e] : a
-                        }(s, c - 80);
-                        const o = i.length * u + p + f;
-                        return t + o + m
-                    }, 0)
-                      , v = Math.max(c, 640);
-                    d.width = v,
-                    d.height = l + g + 30,
-                    h.fillStyle = '#1d1d1f',
-                    h.fillRect(0, 0, d.width, d.height),
-                    h.drawImage(r, Math.round((v - c) / 2), 0, c, l),
-                    h.font = 'bold 13px sans-serif',
-                    h.textBaseline = 'top',
-                    h.fillStyle = '#f5f5f7';
-                    let y = l + 15;
-                    e.forEach(e => {
-                        const t = e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白'
-                          , a = e.text || ''
-                          , n = function(e, t) {
-                            const a = []
-                              , n = e.length;
-                            let s = 0;
-                            for (let i = 0; i < n; ) {
-                                let o = ''
-                                  , r = 0;
-                                for (; i < n && h.measureText(o + e[i]).width <= t; )
-                                    o += e[i],
-                                    i++;
-                                if (0 === o.length && i < n && (o = e[i],
-                                i++),
-                                o)
-                                    a.push(o)
-                            }
-                            return 0 === a.length ? [e] : a
-                        }(a, v - 80);
-                        h.fillStyle = 'rgba(255,255,255,0.04)',
-                        h.fillRect(10, y, v - 20, p + n.length * u + f),
-                        h.fillStyle = '#0a84ff',
-                        h.fillText(t, 30, y + 8),
-                        h.font = '14px sans-serif',
-                        h.fillStyle = '#f5f5f7',
-                        n.forEach((e, t) => {
-                            h.fillText(e, 30, y + p + t * u)
-                        }
-                        ),
-                        y += p + n.length * u + f + m,
-                        h.font = 'bold 13px sans-serif'
+                    const t = document.getElementById('view-novel');
+                    if (!t)
+                        return void o().error('场景元素未找到');
+                    const a = t.getBoundingClientRect()
+                      , n = a.width
+                      , s = a.height
+                      , i = n * 2
+                      , r = s * 2
+                      , c = document.createElement('canvas')
+                      , l = c.getContext('2d');
+                    c.width = Math.max(i, 640);
+                    const d = window.brightnessManager?.currentBackground || this.llmrpParser?.currentBackground || '';
+                    const h = d ? d.replace('qianyedoufu.dpdns.org', 'pub-a4bd6db4d58146baae34ef804cf68ff0.r2.dev') : '';
+                    const p = e => new Promise((t, a) => {
+                        const n = new Image;
+                        n.crossOrigin = 'anonymous',
+                        n.onload = () => t(n),
+                        n.onerror = a,
+                        n.src = e
                     }
                     );
-                    const b = d;
-                    b.toBlob(e => {
-                        if (!e)
-                            return;
-                        const t = URL.createObjectURL(e)
-                          , a = document.createElement('a');
-                        a.href = t,
-                        a.download = '记忆回放_附图_' + Date.now() + '.png',
-                        document.body.appendChild(a),
-                        a.click(),
-                        document.body.removeChild(a),
-                        URL.revokeObjectURL(t)
+                    let u = null;
+                    if (h)
+                        try {
+                            u = await p(h)
+                        } catch (e) {}
+                    const f = t.querySelectorAll('.character-sprite.dynamic');
+                    const m = [];
+                    f.forEach(e => {
+                        const t = e.src.replace('qianyedoufu.dpdns.org', 'pub-a4bd6db4d58146baae34ef804cf68ff0.r2.dev')
+                          , n = e.getBoundingClientRect();
+                        m.push(p(t).then(t => ({
+                            img: t,
+                            x: (n.left - a.left) * 2,
+                            y: (n.top - a.top) * 2,
+                            w: n.width * 2,
+                            h: n.height * 2
+                        })))
                     }
-                    , 'image/png')
+                    );
+                    const g = await Promise.allSettled(m);
+                    l.font = 'bold 13px sans-serif';
+                    const v = 26
+                      , y = 18
+                      , b = 20
+                      , w = 30
+                      , C = e.map(e => {
+                        const t = e.speaker && e.speaker.trim() ? e.speaker.trim() : '旁白'
+                          , a = e.text || ''
+                            , n = function(e, t) {
+                            const a = [];
+                            let n = '';
+                            for (let s = 0; s < e.length; s++) {
+                                const i = e[s];
+                                t.measureText(n + i).width > c.width - 60 && n.length > 0 ? (a.push(n),
+                                n = i) : n += i
+                            }
+                            return n.length > 0 && a.push(n),
+                            0 === a.length ? [e] : a
+                        }(a, l)
+                          , s = n.length;
+                        return {
+                            speaker: t,
+                            lines: n,
+                            lineCount: s,
+                            blockHeight: v + s * y + b + w
+                        }
+                    }
+                    )
+                      , x = C.reduce((e, t) => e + t.blockHeight, 0) + 10;
+                    c.height = r + x,
+                    l.fillStyle = '#1d1d1f',
+                    l.fillRect(0, 0, c.width, c.height),
+                    u && l.drawImage(u, 0, 0, i, r),
+                    g.forEach(e => {
+                        'fulfilled' === e.status && e.value && l.drawImage(e.value.img, e.value.x, e.value.y, e.value.w, e.value.h)
+                    }
+                    );
+                    let T = r + 10;
+                    C.forEach(e => {
+                        l.fillStyle = 'rgba(255,255,255,0.04)',
+                        l.fillRect(10, T, c.width - 20, e.blockHeight),
+                        l.fillStyle = '#0a84ff',
+                        l.font = 'bold 13px sans-serif',
+                        l.fillText(e.speaker, 30, T + 8),
+                        l.font = '14px sans-serif',
+                        l.fillStyle = '#f5f5f7',
+                        e.lines.forEach((t, a) => {
+                            l.fillText(t, 30, T + v + a * y)
+                        }
+                        ),
+                        T += e.blockHeight
+                    }
+                    );
+                    try {
+                        c.toBlob(e => {
+                            if (!e)
+                                return;
+                            const t = URL.createObjectURL(e)
+                              , a = document.createElement('a');
+                            a.href = t,
+                            a.download = '记忆回放_附图_' + Date.now() + '.png',
+                            document.body.appendChild(a),
+                            a.click(),
+                            document.body.removeChild(a),
+                            URL.revokeObjectURL(t)
+                        }
+                        , 'image/png')
+                    } catch (e) {
+                        o().error('导出失败，请重试')
+                    }
                 }
                 applyBackgroundColorChoice(e) {
                    backgroundColorManager.saveKey(e),
