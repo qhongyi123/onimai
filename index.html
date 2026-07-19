@@ -168,8 +168,10 @@
                         a > this.autoThreshold && (t = Math.min((a - this.autoThreshold) / (255 - this.autoThreshold) * this.maxOverlayOpacity, this.maxOverlayOpacity))
                     }
                     const n = t.toFixed(3)
-                      , s = t > 0 ? `inset 0 0 0 9999px rgba(0, 0, 0, ${n}), 0 30px 80px rgba(0,0,0,0.55)` : '0 30px 80px rgba(0,0,0,0.55)';
+                      , s = t > 0 ? `inset 0 0 0 9999px rgba(0, 0, 0, ${n}), 0 30px 80px rgba(0,0,0,0.55)` : '0 30px 80px rgba(0,0,0,0.55)'
+                      , i = t > 0 ? `inset 0 0 0 9999px rgba(0, 0, 0, ${n})` : '';
                     $('#view-novel').css('box-shadow', s),
+                    $('#content-area').css('box-shadow', i),
                     this.updateUI()
                 }
                 setMode(e) {
