@@ -199,7 +199,8 @@
                     $('#brightness-manual-value').text(Math.round(100 * this.manualLevel) + '%')) : ($('#brightness-manual-section').hide(),
                     $('#brightness-auto-section').show(),
                     $('#brightness-threshold-slider').val(this.autoThreshold),
-                    $('#brightness-threshold-value').text(this.autoThreshold))
+                    $('#brightness-threshold-value').text(this.autoThreshold),
+                    $('#brightness-luminance-value').text(null !== this.currentLuminance ? Math.round(this.currentLuminance) : '--'))
                 }
             }
             class l {
@@ -5457,6 +5458,9 @@
                     <span style="font-size:12px;color:var(--text-color-secondary,#aaa)">0</span>
                     <input type="range" id="brightness-threshold-slider" class="brightness-slider" min="0" max="255" value="150" step="1">
                     <span style="font-size:12px;color:var(--text-color-secondary,#aaa)">255</span>
+                </div>
+                <div style="margin-top:10px;font-size:12px;color:var(--text-color-secondary,#aaa)">
+                    当前背景亮度：<span id="brightness-luminance-value" style="color:var(--text-color)">--</span>
                 </div>
             </div>
         </div>
